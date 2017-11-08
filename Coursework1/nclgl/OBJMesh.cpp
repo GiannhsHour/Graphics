@@ -267,7 +267,7 @@ void	OBJMesh::SetTexturesFromMTL(string &mtlFile, string &mtlType) {
 
 	if(i != materials.end()) {
 		if(!i->second.diffuse.empty())	{
-			texture = i->second.diffuseNum;
+			texture[0] = i->second.diffuseNum;
 		}
 #ifdef OBJ_USE_TANGENTS_BUMPMAPS
 		if(!i->second.bump.empty())	{
