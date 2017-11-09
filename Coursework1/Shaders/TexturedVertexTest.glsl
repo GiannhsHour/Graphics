@@ -21,5 +21,5 @@ void main(void) {
 	gl_Position = mvp * vec4(position, 1.0);
 	OUT.texCoord = (textureMatrix * vec4(texCoord, 0.0, 1.0)).xy;
 	OUT.colour = nodeColour;
-	OUT.position = projMatrix*vec4(position, 1.0);
+	OUT.position = projMatrix*modelMatrix*vec4(position, 1.0);
 }

@@ -26,7 +26,8 @@ protected:
 	Camera * camera;
 	Mesh* quad;
 	HeightMap* heightMap;
-
+	Shader* sceneShader;
+	Shader* quadShader;
 	Frustum frameFrustum;
 
 	vector<SceneNode*> transparentNodeList;

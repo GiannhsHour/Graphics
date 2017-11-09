@@ -4,16 +4,17 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	CubeRobot::CreateCube(); // Important !
 	camera = new Camera();
 	heightMap = new HeightMap("../../Textures/terrain.raw");
-	currentShader = new Shader("../../Shaders/TexturedVertexTest.glsl", "../../Shaders/TexturedFragmentTest.glsl");
-	
+	quadShader = new Shader("../../Shaders/TexturedVertex.glsl", "../../Shaders/TexturedFragment.glsl");
+	sceneShader = new Shader("../../Shaders/TexturedVertexTest.glsl", "../../Shaders/TexturedFragmentTest.glsl");
+	currentShader = quadShader;
 	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
 	
 	camera -> SetPosition(Vector3(500, 200, 500));
 
 	quad = Mesh::GenerateQuad();
-	quad->SetTexture(SOIL_load_OGL_texture("../../Textures/stainedglass.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, 0),0);
+	quad->SetTexture(SOIL_load_OGL_texture("../../Textures/sky.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, 0),0);
 
-	if (!currentShader->LinkProgram() || !quad->GetTexture(0)) {
+	if (!sceneShader->LinkProgram() || !quadShader->LinkProgram()  || !quad->GetTexture(0)) {
 		return;
 	}
 
@@ -41,7 +42,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	}
 	CubeRobot *robotaki = new CubeRobot();
 	robotaki->SetTransform(Matrix4::Translation(Vector3(800, 50.0f, 800)));
-	root->AddChild(robotaki);
+	//root->AddChild(robotaki);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
@@ -69,13 +70,27 @@ void Renderer::RenderScene() {
 	SortNodeLists();
 
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-	
-	glUseProgram(currentShader -> GetProgram());
-	UpdateShaderMatrices();
 
-	glUniform1i(glGetUniformLocation(currentShader -> GetProgram(), "diffuseTex"), 0);
-	glUniform1i(glGetUniformLocation(currentShader -> GetProgram(), "diffuseTex1"), 1);
-	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex2"), 2);
+	glUseProgram(quadShader -> GetProgram());
+	projMatrix = Matrix4::Orthographic(-1, 1, 1, -1, -1, 1);
+	Matrix4 tempView = viewMatrix;
+	viewMatrix.ToIdentity();
+	UpdateShaderMatrices();
+	glDisable(GL_DEPTH_TEST);
+
+	glUniform1i(glGetUniformLocation(quadShader-> GetProgram(), "diffuseTex"), 0);
+	
+	quad->Draw();
+	currentShader = sceneShader;
+	glUseProgram(sceneShader->GetProgram());
+	glUniform1i(glGetUniformLocation(sceneShader->GetProgram(), "diffuseTex"), 0);
+	glUniform1i(glGetUniformLocation(sceneShader->GetProgram(), "diffuseTex1"), 1);
+	glUniform1i(glGetUniformLocation(sceneShader->GetProgram(), "diffuseTex2"), 2);
+
+	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
+	viewMatrix = tempView;
+	UpdateShaderMatrices();
+	glEnable(GL_DEPTH_TEST);
 	//heightMap->Draw();
 	DrawNodes();
 

@@ -11,18 +11,21 @@ in Vertex {
 } IN;
 
 out vec4 gl_FragColor;
+vec4 rockColor;
 
 void main(void){
 	gl_FragColor = IN.colour;
 	if(useTexture > 0) {
-		if(IN.position.y>604){
-			gl_FragColor *= texture(diffuseTex1, IN.texCoord);
+		rockColor = gl_FragColor * texture(diffuseTex, IN.texCoord);
+		if(IN.position.y>500){
+			gl_FragColor *= texture(diffuseTex1, IN.texCoord) * (1.0-(750-IN.position.y)/250) + rockColor * ((750-IN.position.y)/250);
 		}
-		else if(IN.position.y<181){
-			gl_FragColor *= texture(diffuseTex2, IN.texCoord);
+		else if(IN.position.y<180){
+			gl_FragColor *= texture(diffuseTex2, IN.texCoord) * (1.0-IN.position.y/180) + rockColor * (IN.position.y/180);
+			
 		}
 		else{
-			gl_FragColor *= texture(diffuseTex, IN.texCoord);
+			gl_FragColor  = rockColor ;
 		}
 		
 	}
