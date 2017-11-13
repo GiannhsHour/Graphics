@@ -11,21 +11,16 @@ public:
 	static void CreateCube() {
 		OBJMesh * m = new OBJMesh();
 		m -> LoadOBJMesh(MESHDIR"cube.obj");
-		OBJMesh * s = new OBJMesh();
-		s->LoadOBJMesh(MESHDIR"sphere.obj");
 		cube = m;
-		sphere = s;
 	}
-	static void DeleteCube() { delete cube; delete sphere; }
+	static void DeleteCube() { delete cube; }
+	Mesh * getMesh(){return cube;}
 
 protected:
 	static Mesh * cube;
-	static Mesh * sphere;
-	SceneNode * head;
-	SceneNode * leftArm;
-	SceneNode * rightArmTop;
-	SceneNode * rightArmBot;
-	SceneNode * leftShoulder;
-	SceneNode * rightShoulder;
-	SceneNode * rightElbow;
+	SceneNode * center;
+	SceneNode * wall1;
+	SceneNode * wall2;
+	SceneNode * wall3;
+
 };

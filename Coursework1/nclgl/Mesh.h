@@ -3,7 +3,7 @@
 #include "OGLRenderer.h"
 
  enum MeshBuffer {
-	 VERTEX_BUFFER, COLOUR_BUFFER, TEXTURE_BUFFER, INDEX_BUFFER, MAX_BUFFER
+	 VERTEX_BUFFER, COLOUR_BUFFER, TEXTURE_BUFFER, NORMAL_BUFFER, INDEX_BUFFER, MAX_BUFFER
 
 };
 class Mesh {
@@ -16,6 +16,7 @@ public:
 	GLuint GetTexture(int pos) { return texture[pos]; }
 	static Mesh * GenerateQuad();
 protected:
+	void GenerateNormals();
 	GLuint texture[3];
 	Vector2 * textureCoords;
 	void BufferData();
@@ -27,4 +28,5 @@ protected:
 	unsigned int* indices;
 	Vector3 * vertices;
 	Vector4 * colours;
+	Vector3* normals;
 };

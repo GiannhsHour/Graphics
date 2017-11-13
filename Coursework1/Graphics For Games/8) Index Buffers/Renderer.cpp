@@ -1,15 +1,16 @@
 #include "Renderer.h"
 
+
 Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	CubeRobot::CreateCube(); // Important !
-	camera = new Camera();
+	camera = new Camera(0,180,Vector3(0,0,0));
 	heightMap = new HeightMap("../../Textures/terrain.raw");
 	quadShader = new Shader("../../Shaders/TexturedVertex.glsl", "../../Shaders/TexturedFragment.glsl");
-	sceneShader = new Shader("../../Shaders/TexturedVertexTest.glsl", "../../Shaders/TexturedFragmentTest.glsl");
+	sceneShader = new Shader("../../Shaders/PerPixelVertex.glsl", "../../Shaders/PerPixelFragment.glsl");
 	currentShader = quadShader;
 	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
-	
-	camera -> SetPosition(Vector3(500, 200, 500));
+	light = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X ) * 1.5f, 1500.0f, (RAW_HEIGHT * HEIGHTMAP_Z )), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X ));
+	//camera -> SetPosition(Vector3(500, 200, 500));
 
 	quad = Mesh::GenerateQuad();
 	quad->SetTexture(SOIL_load_OGL_texture("../../Textures/sky.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, 0),0);
@@ -17,10 +18,14 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	if (!sceneShader->LinkProgram() || !quadShader->LinkProgram()  || !quad->GetTexture(0)) {
 		return;
 	}
-
+	
+	
 	heightMap->SetTexture(SOIL_load_OGL_texture("../../Textures/Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS),0);
 	heightMap->SetTexture(SOIL_load_OGL_texture("../../Textures/snow2.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 1);
 	heightMap->SetTexture(SOIL_load_OGL_texture("../../Textures/grass.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 2);
+
+	
+
 
 
 	if (!heightMap->GetTexture(0)) {
@@ -30,19 +35,25 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	SetTextureRepeating(heightMap->GetTexture(0), true); SetTextureRepeating(heightMap->GetTexture(1), true); SetTextureRepeating(heightMap->GetTexture(2), true);
 	root = new SceneNode();
 	
-	for (int i = 0; i < 1; i++) {
-		SceneNode* s = new SceneNode();
-		s->SetColour(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-		//s->SetTransform(Matrix4::Translation(Vector3(0, 100.0f, -300.0f + 100.0f + 100 * i)));
-		s->SetTransform(Matrix4::Translation(Vector3(0, 0.0f, 0.0f)));
-		s->SetModelScale(Vector3(1.0f, 1.0f, 1.0f));
-		s->SetBoundingRadius(10000.0f);
-		s->SetMesh(heightMap);
-		root->AddChild(s);
+
+	SceneNode* s = new SceneNode();
+	s->SetColour(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+	s->SetTransform(Matrix4::Translation(Vector3(0, 0.0f, 0.0f)));
+	s->SetModelScale(Vector3(2.0f, 1.0f, 2.0f));
+	s->SetBoundingRadius(10000.0f);
+	s->SetMesh(heightMap);
+	s->setType(1);
+	root->AddChild(s);
+	CubeRobot *wall = new CubeRobot();
+	Mesh* cube = wall->getMesh();
+	cube->SetTexture(SOIL_load_OGL_texture("../../Textures/wall.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
+	if (!cube->GetTexture(0)) {
+		return;
 	}
-	CubeRobot *robotaki = new CubeRobot();
-	robotaki->SetTransform(Matrix4::Translation(Vector3(800, 50.0f, 800)));
-	//root->AddChild(robotaki);
+	SetTextureRepeating(cube->GetTexture(0), true); SetTextureRepeating(cube->GetTexture(1), true); SetTextureRepeating(cube->GetTexture(2), true);
+	wall->SetTransform(Matrix4::Translation(Vector3(800.0f, 50.0f, 800.0f)));
+	wall->setType(2);
+	root->AddChild(wall);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
@@ -86,10 +97,12 @@ void Renderer::RenderScene() {
 	glUniform1i(glGetUniformLocation(sceneShader->GetProgram(), "diffuseTex"), 0);
 	glUniform1i(glGetUniformLocation(sceneShader->GetProgram(), "diffuseTex1"), 1);
 	glUniform1i(glGetUniformLocation(sceneShader->GetProgram(), "diffuseTex2"), 2);
+	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float *)& camera->GetPosition());
 
 	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
 	viewMatrix = tempView;
 	UpdateShaderMatrices();
+	SetShaderLight(*light);
 	glEnable(GL_DEPTH_TEST);
 	//heightMap->Draw();
 	DrawNodes();
@@ -113,7 +126,8 @@ void Renderer::DrawNode(SceneNode * n) {
 		glUniform4fv(glGetUniformLocation(currentShader -> GetProgram(), "nodeColour"), 1, (float *)& n -> GetColour());
 
 		glUniform1i(glGetUniformLocation(currentShader -> GetProgram(), "useTexture"), (int)n -> GetMesh() -> GetTexture(0));
-
+	 
+		glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "type"), (int)n->getType());
 		n -> Draw(*this);
 	}
 }

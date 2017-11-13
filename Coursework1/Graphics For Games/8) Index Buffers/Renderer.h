@@ -14,7 +14,8 @@ public:
 
 	virtual void UpdateScene(float msec);
 	virtual void RenderScene();
-
+	Light* getLight() { return light; }
+	Camera* getCamera() { return camera; }
 protected:
 	void DrawNode(SceneNode * n);
 	void BuildNodeLists(SceneNode* from);
@@ -28,7 +29,9 @@ protected:
 	HeightMap* heightMap;
 	Shader* sceneShader;
 	Shader* quadShader;
+	Shader* generalShader;
 	Frustum frameFrustum;
+	Light * light;
 
 	vector<SceneNode*> transparentNodeList;
 	vector<SceneNode*> nodeList;

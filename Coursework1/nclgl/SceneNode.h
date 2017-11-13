@@ -41,6 +41,9 @@ public:
 		return a->distanceFromCamera < b->distanceFromCamera;
 	}
 
+	int getType() { return type; }
+	void setType(int tp) { type = tp; }
+
 protected:
 	SceneNode * parent;
 	Mesh * mesh;
@@ -51,4 +54,5 @@ protected:
 	float distanceFromCamera;
 	float boundingRadius;
 	std::vector < SceneNode * > children;
+	int type;
 };
