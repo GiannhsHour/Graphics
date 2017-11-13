@@ -9,7 +9,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	sceneShader = new Shader("../../Shaders/PerPixelVertex.glsl", "../../Shaders/PerPixelFragment.glsl");
 	currentShader = quadShader;
 	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
-	light = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X ) * 1.5f, 1500.0f, (RAW_HEIGHT * HEIGHTMAP_Z )), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X ));
+	light = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X ) * 1.5f, 1500.0f, (RAW_HEIGHT * HEIGHTMAP_Z )* 1.5f), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X ));
 	//camera -> SetPosition(Vector3(500, 200, 500));
 
 	quad = Mesh::GenerateQuad();
@@ -51,7 +51,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 		return;
 	}
 	SetTextureRepeating(cube->GetTexture(0), true); SetTextureRepeating(cube->GetTexture(1), true); SetTextureRepeating(cube->GetTexture(2), true);
-	wall->SetTransform(Matrix4::Translation(Vector3(800.0f, 50.0f, 800.0f)));
+	//wall->SetTransform(Matrix4::Translation(Vector3(800.0f, 50.0f, 800.0f)));
 	wall->setType(2);
 	root->AddChild(wall);
 
