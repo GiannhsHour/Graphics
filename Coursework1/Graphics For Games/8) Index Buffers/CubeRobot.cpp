@@ -6,25 +6,25 @@ CubeRobot::CubeRobot(void) {
 	// Optional , uncomment if you want a local origin marker !
 	// SetMesh ( cube );
 	
-	center = new SceneNode(cube, Vector4(1, 0, 0, 1)); // Red !
+	center = new SceneNode(cube, Vector4(1, 0, 0, 1));
 	center->SetModelScale(Vector3(20, 800, 5));
 	center->SetTransform(Matrix4::Translation(Vector3(3200, 35, 3300)));
 	center->SetBoundingRadius(1000.0f);
 	AddChild(center);
 
-	wall1 = new SceneNode(cube, Vector4(1, 0, 0, 1)); // Red !
+	wall1 = new SceneNode(cube, Vector4(1, 0, 0, 1)); 
 	wall1->SetModelScale(Vector3(20, 800, 2840));
 	wall1->SetTransform(Matrix4::Translation(Vector3(-2000, 0, 2000))*Matrix4::Rotation(135.5f, Vector3(0, 1, 0)));
 	wall1->SetBoundingRadius(2000.0f);
 	center->AddChild(wall1);
 
-	wall2 = new SceneNode(cube, Vector4(1, 0, 0, 1)); // Red !
+	wall2 = new SceneNode(cube, Vector4(1, 0, 0, 1)); 
 	wall2->SetModelScale(Vector3(20, 800, 2100));
 	wall2->SetTransform(Matrix4::Translation(Vector3(2100, 0, 0))*Matrix4::Rotation(90.0f, Vector3(0,1,0)));
 	wall2->SetBoundingRadius(2000.0f);
 	center->AddChild(wall2);
 
-	wall3 = new SceneNode(cube, Vector4(1, 0, 0, 1)); // Red !
+	wall3 = new SceneNode(cube, Vector4(1, 0, 0, 1)); 
 	wall3->SetModelScale(Vector3(20, 800, 2820));
 	wall3->SetTransform(Matrix4::Translation(Vector3(-1900, 0, -2060))*Matrix4::Rotation(223.0f, Vector3(0, 1, 0)));
 	wall3->SetBoundingRadius(2000.0f);
