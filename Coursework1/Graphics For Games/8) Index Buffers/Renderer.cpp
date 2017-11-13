@@ -19,12 +19,9 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 		return;
 	}
 	
-	
-	heightMap->SetTexture(SOIL_load_OGL_texture("../../Textures/Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS),0);
+	heightMap->SetTexture(SOIL_load_OGL_texture("../../Textures/wall.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS),0);
 	heightMap->SetTexture(SOIL_load_OGL_texture("../../Textures/snow2.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 1);
 	heightMap->SetTexture(SOIL_load_OGL_texture("../../Textures/grass.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 2);
-
-	
 
 
 
@@ -39,7 +36,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	SceneNode* s = new SceneNode();
 	s->SetColour(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 	s->SetTransform(Matrix4::Translation(Vector3(0, 0.0f, 0.0f)));
-	s->SetModelScale(Vector3(2.0f, 1.0f, 2.0f));
+	s->SetModelScale(Vector3(2.0f, 3.0f, 2.0f));
 	s->SetBoundingRadius(10000.0f);
 	s->SetMesh(heightMap);
 	s->setType(1);
@@ -93,10 +90,10 @@ void Renderer::RenderScene() {
 	
 	quad->Draw();
 	currentShader = sceneShader;
-	glUseProgram(sceneShader->GetProgram());
-	glUniform1i(glGetUniformLocation(sceneShader->GetProgram(), "diffuseTex"), 0);
-	glUniform1i(glGetUniformLocation(sceneShader->GetProgram(), "diffuseTex1"), 1);
-	glUniform1i(glGetUniformLocation(sceneShader->GetProgram(), "diffuseTex2"), 2);
+	glUseProgram(currentShader->GetProgram());
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex1"), 1);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex2"), 2);
 	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float *)& camera->GetPosition());
 
 	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);

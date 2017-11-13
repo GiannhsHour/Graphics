@@ -22,18 +22,16 @@ uniform int type;
 void main ( void ) {
  vec4 diffuse;
  
- if(type == 1){
-	 if(IN.worldPos .y>500){
+	if(IN.worldPos.y>500){
 			diffuse = texture ( diffuseTex1 , IN.texCoord ) * (1.0-(750-IN.worldPos .y)/250) + texture ( diffuseTex , IN.texCoord ) * ((750-IN.worldPos .y)/250);
 		}
-		else if(IN.worldPos .y<180){
-			diffuse = texture ( diffuseTex2 , IN.texCoord ) * (1.0-IN.worldPos.y/180) + texture ( diffuseTex , IN.texCoord ) * (IN.worldPos.y/180);
+		else if(IN.worldPos.y<200){
+			diffuse = texture ( diffuseTex2 , IN.texCoord ) * (1.0-IN.worldPos.y/200) + texture ( diffuseTex , IN.texCoord ) * (IN.worldPos.y/200);
 		}
 		else{
 			diffuse  = texture ( diffuseTex , IN.texCoord );
 		}
-}
-else diffuse = texture ( diffuseTex , IN.texCoord );
+
 
   vec3 incident = normalize ( lightPos - IN.worldPos );
   float lambert = max (0.0 , dot ( incident , IN.normal ));
