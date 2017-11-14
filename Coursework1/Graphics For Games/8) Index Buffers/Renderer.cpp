@@ -6,10 +6,14 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	camera = new Camera(0,180,Vector3(0,0,0));
 	heightMap1 = new HeightMap("../../Textures/terrain.raw");
 	heightMap2 = new HeightMap("../../Textures/terrain2.raw");
-	sceneShader = new Shader("../../Shaders/PerPixelVertex.glsl", "../../Shaders/PerPixelFragment.glsl");
+	sceneShader = new Shader("../../Shaders/PerPixelVertex.glsl", "../../Shaders/PerPixelFragmentMultiLight.glsl");
 	currentShader = sceneShader;
 	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
-	light[0] = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X ) * 1.5f, 1500.0f, (RAW_HEIGHT * HEIGHTMAP_Z )), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X ));
+	lights.push_back(new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X ) * 1.5f, 1500.0f, (RAW_HEIGHT * HEIGHTMAP_Z )), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X )));
+	Light* light2 = new Light(Vector3(1600,1700,1100), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X));
+	light2->SetColour(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+	lights.push_back(light2);
+
 
 	if (!sceneShader->LinkProgram()){
 		return;
@@ -98,11 +102,11 @@ void Renderer::RenderScene() {
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex1"), 1);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex2"), 2);
 	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float *)& camera->GetPosition());
-//	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "numLights"), 1);
+
 	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
 
 	UpdateShaderMatrices();
-	SetShaderLight(*light[0]);
+	SetShaderLight(lights);
 	glEnable(GL_DEPTH_TEST);
 	//heightMap->Draw();
 	DrawNodes();

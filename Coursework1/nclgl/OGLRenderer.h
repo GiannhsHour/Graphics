@@ -127,7 +127,7 @@ protected:
 
 	void			SetTextureRepeating(GLuint target, bool state);
 
-	void			SetShaderLight(const Light &l);
+	void			SetShaderLight(const vector<Light *> &l);
 
 	void			DrawDebugPerspective(Matrix4*matrix = 0);
 	void			DrawDebugOrtho(Matrix4*matrix = 0);

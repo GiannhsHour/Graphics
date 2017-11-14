@@ -15,7 +15,7 @@ _-_-_-_-_-_-_-""  ""
 
 
 #include "OGLRenderer.h"
-
+#include <sstream>
 DebugDrawData* OGLRenderer::orthoDebugData			= NULL;
 DebugDrawData* OGLRenderer::perspectiveDebugData	= NULL;
 OGLRenderer*   OGLRenderer::debugDrawingRenderer	= NULL;
@@ -251,11 +251,16 @@ void OGLRenderer::SetTextureRepeating( GLuint target, bool repeating )	{
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void OGLRenderer::SetShaderLight(const Light &l) {
-	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "lightPos")   ,0,(float*)&l.GetPosition());
-	glUniform4fv(glGetUniformLocation(currentShader->GetProgram(), "lightColour"),0,(float*)&l.GetColour());
-	glUniform1f(glGetUniformLocation(currentShader->GetProgram() , "lightRadius"),l.GetRadius());
-	glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "ambient"), l.GetAmbient());
+void OGLRenderer::SetShaderLight(const vector<Light*> &l) {
+	for (int i = 0; i < l.size(); i++) {
+		string arr = "allLights[" + to_string(i) + "].";
+		glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), (arr+"lightPos").c_str()), 1, (float*)&l[i]->GetPosition());
+		glUniform4fv(glGetUniformLocation(currentShader->GetProgram(), (arr + "lightColour").c_str()), 1, (float*)&l[i]->GetColour());
+		glUniform1f(glGetUniformLocation(currentShader->GetProgram(), (arr + "lightRadius").c_str()), l[i]->GetRadius());
+		glUniform1f(glGetUniformLocation(currentShader->GetProgram(), (arr + "ambient").c_str()), l[i]->GetAmbient());
+	}
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "numLights"), l.size());
+	
 }
 
 #ifdef OPENGL_DEBUGGING
