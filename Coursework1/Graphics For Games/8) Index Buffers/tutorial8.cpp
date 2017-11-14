@@ -19,7 +19,7 @@ int main() {
 	w.ShowOSPointer(false);
 	float rotation = 2.0f;
 	while (w.UpdateWindow() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE)) {
-		light = renderer.getLight();
+		light = renderer.getLight(0);
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_P)) {
 			light->SetAmbient(light->GetAmbient() + 0.005f);
 		}
@@ -37,7 +37,7 @@ int main() {
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_R)) {
 			//cout << renderer.getLight()->GetPosition().x << " " << renderer.getLight()->GetPosition().y << " " << renderer.getLight()->GetPosition().z << endl;
 			cout << renderer.getCamera()->GetPosition().x << " " << renderer.getCamera()->GetPosition().y << " " << renderer.getCamera()->GetPosition().z << endl;
-			renderer.getLight()->SetPosition(Matrix4::Translation(Vector3(4000.0f, 0.0f, 4200.0f)) * Matrix4::Rotation(rotation, Vector3(0.0f, 1.0f, 0.0f))  * Matrix4::Translation(-Vector3(4000.0f, 0.0f, 4200.0f))  * renderer.getLight()->GetPosition());
+			renderer.getLight(0)->SetPosition(Matrix4::Translation(Vector3(4000.0f, 0.0f, 4200.0f)) * Matrix4::Rotation(rotation, Vector3(0.0f, 1.0f, 0.0f))  * Matrix4::Translation(-Vector3(4000.0f, 0.0f, 4200.0f))  * renderer.getLight(0)->GetPosition());
 		//	renderer.getCamera()->SetPosition(Matrix4::Translation(Vector3(800.0f, 50.0f, 800.0f)) * Matrix4::Rotation(rotation, Vector3(0.0f, 1.0f, 0.0f))  * Matrix4::Translation(-Vector3(800.0f, 50.0f, 800.0f))  * renderer.getCamera()->GetPosition()) ;
 			//renderer.getCamera()->SetYaw(renderer.getCamera()->GetYaw() + 2.0f);
 		}

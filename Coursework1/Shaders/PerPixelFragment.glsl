@@ -33,8 +33,7 @@ if(type == 1){
 			diffuse  = texture ( diffuseTex , IN.texCoord);
 		}
 }
-else diffuse  = texture ( diffuseTex , IN.texCoord *3 );
-
+  else diffuse  = texture ( diffuseTex , IN.texCoord );
   vec3 incident = normalize ( lightPos - IN.worldPos );
   float lambert = max (0.0 , dot ( incident , IN.normal ));
   float dist = length ( lightPos - IN.worldPos );
