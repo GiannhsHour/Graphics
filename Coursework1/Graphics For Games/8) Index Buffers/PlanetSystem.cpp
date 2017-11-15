@@ -53,12 +53,12 @@ PlanetSystem::PlanetSystem(void) {
 
 void PlanetSystem::Update(float msec) {
 	//transform = transform * Matrix4::Rotation(msec / 20.0f, Vector3(0, 1, 0));
-	sun -> SetTransform(sun -> GetTransform() *Matrix4::Rotation(-msec / 150.0f, Vector3(0, 1, 0)));
+	sun -> SetTransform(sun -> GetTransform() *Matrix4::Rotation(-msec / 300.0f, Vector3(0, 1, 0)));
 
-	planet1 -> SetTransform(planet1 -> GetTransform() *Matrix4::Rotation(-msec / 100.0f, Vector3(1, 1, 0)));
-	planet2 ->  SetTransform(planet2-> GetTransform() *Matrix4::Rotation(msec / 70.0f, Vector3(0, 1, 0)));
-	planet3 -> SetTransform(planet3->GetTransform() *Matrix4::Rotation(msec / 60.0f, Vector3(0, 1, 0)));
-	planet4 ->SetTransform(planet4->GetTransform() *Matrix4::Rotation(msec / 50.0f, Vector3(0, 1, 0)));
-	planet5->SetTransform(planet5->GetTransform() *Matrix4::Rotation(msec / 40.0f, Vector3(0, 1, 0)));
+	planet1 -> SetTransform(planet1 -> GetTransform() *Matrix4::Rotation(-msec / 240.0f, Vector3(1, 1, 0)));
+	planet2 ->  SetTransform(planet2-> GetTransform() *Matrix4::Rotation(-msec / 170.0f, Vector3(0, 1, 0)));
+	planet3 -> SetTransform(planet3->GetTransform() *Matrix4::Rotation(-msec / 100.0f, Vector3(0, 1, 0)));
+	planet4 ->SetTransform(planet4->GetTransform() *Matrix4::Rotation(-msec / 80.0f, Vector3(0, 1, 0)));
+	planet5->SetTransform(planet5->GetTransform() *Matrix4::Rotation(-msec / 70.0f, Vector3(0, 1, 0)));
 	SceneNode::Update(msec);
 }

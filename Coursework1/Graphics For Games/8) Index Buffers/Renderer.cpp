@@ -3,24 +3,34 @@
 
 Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	PlanetSystem::CreatePlanetSystem(); // Important !
+	quad = Mesh::GenerateQuad();
 	camera = new Camera(0,180,Vector3(0,0,0));
 	heightMap1 = new HeightMap("../../Textures/terrain.raw");
 	heightMap2 = new HeightMap("../../Textures/terrain2.raw");
 	sceneShader = new Shader("../../Shaders/PerPixelVertex.glsl", "../../Shaders/PerPixelFragmentMultiLight.glsl");
 	planetShader = new Shader("../../Shaders/PerPixelVertex.glsl", "../../Shaders/PerPixelFragmentMultiLightPlanets.glsl");
+	skyboxShader = new Shader("../../Shaders/skyboxVertex.glsl", "../../Shaders/skyboxFragment.glsl");
 	currentShader = sceneShader;
 	projMatrix = Matrix4::Perspective(1.0f, 20000.0f, (float)width / (float)height, 45.0f);
 	/*lights.push_back(new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X ) * 1.5f, 1500.0f, (RAW_HEIGHT * HEIGHTMAP_Z )), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X *2)));
 	Light* light2 = new Light(Vector3(1600,1700,1100), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X));*/
 	//light2->SetColour(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
 	Light *sunLight = new Light(Vector3(2200, 370, 2500), Vector4(1, 1, 1, 1), 10000.0f);
-	sunLight->SetAmbient(0.02f);
+	sunLight->SetAmbient(0.01f);
 	lights.push_back(sunLight);
 
 
-	if (!sceneShader->LinkProgram() || !planetShader->LinkProgram()){
+	if (!sceneShader->LinkProgram() || !planetShader->LinkProgram() || !skyboxShader->LinkProgram()){
 		return;
 	}
+
+	cubeMap = SOIL_load_OGL_cubemap(
+		TEXTUREDIR"/cubemap_galaxy/bkg1_right.JPG", TEXTUREDIR"/cubemap_galaxy/bkg1_left.JPG",
+		TEXTUREDIR"/cubemap_galaxy/bkg1_top.JPG", TEXTUREDIR"/cubemap_galaxy/bkg1_bot.JPG",
+		TEXTUREDIR"/cubemap_galaxy/bkg1_front.JPG", TEXTUREDIR"/cubemap_galaxy/bkg1_back.JPG",
+		SOIL_LOAD_RGB,
+		SOIL_CREATE_NEW_ID, 0);	
+	quad -> SetTexture(SOIL_load_OGL_texture("../../Textures/wall.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS),0);	SetTextureRepeating(quad->GetTexture(0), true);
 	
 	heightMap1->SetTexture(SOIL_load_OGL_texture("../../Textures/wall.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS),0);
 	heightMap1->SetTexture(SOIL_load_OGL_texture("../../Textures/snow2.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 1);
@@ -29,7 +39,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	heightMap2->SetTexture(SOIL_load_OGL_texture("../../Textures/wall.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
 
 
-	if (!heightMap1->GetTexture(0)) {
+	if (!heightMap1->GetTexture(0) || !cubeMap || !quad->GetTexture(0)) {
 		return;
 	}
 	for (int i = 0; i < 3; i++) {
@@ -40,7 +50,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	root1 = new SceneNode();
 	root2 = new SceneNode();
 	root3 = new SceneNode();
-	root = root1;
+	root = root3;
 	
 
 	SceneNode* scene1 = new SceneNode();
@@ -79,17 +89,20 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_BACK);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	init = true;
 }
 
 Renderer ::~Renderer(void) {
 	delete root1;
 	delete root2;
-	PlanetSystem::DeletePlanetSystem(); // Also important !
+	PlanetSystem::DeletePlanetSystem();
 	delete heightMap1;
+	delete heightMap2;
+	delete skyboxShader;	currentShader = 0;
 }
 
 void Renderer::UpdateScene(float msec) {
@@ -99,14 +112,26 @@ void Renderer::UpdateScene(float msec) {
 	root -> Update(msec);
 }
 
+void Renderer::DrawSkybox() {
+	 glDepthMask(GL_FALSE);
+	 SetCurrentShader(skyboxShader);
+	 UpdateShaderMatrices();
+	 quad->Draw();
+	
+	 glUseProgram(0);
+	 glDepthMask(GL_TRUE);}
+
 void Renderer::RenderScene() {
 	BuildNodeLists(root);
 	SortNodeLists();
 
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-	if(root == root1 || root == root2) currentShader = sceneShader;
-	else if (root == root3) currentShader = planetShader;
+	DrawSkybox();
+
+	
+	if(root == root1 || root == root2) SetCurrentShader(sceneShader);
+	else if (root == root3) SetCurrentShader(planetShader);
 	glUseProgram(currentShader->GetProgram());
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex1"), 1);

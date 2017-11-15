@@ -31,13 +31,13 @@ void main ( void ) {
  vec4 diffuse;
  
 if(type == 0){
-		diffuse = texture ( diffuseTex , IN.texCoord * 3) * 50 ;
+		diffuse = texture ( diffuseTex , IN.texCoord ) * 150 ;
 	}
 else if(type == 1){
 			diffuse = texture ( diffuseTex1 , IN.texCoord ) ;
 				   }
 else if(type == 2){
-			diffuse = texture ( diffuseTex2 , IN.texCoord ) * 5 ;
+			diffuse = texture ( diffuseTex2 , IN.texCoord ) * 10 ;
 				   }
 else if(type == 3){
 			diffuse = texture ( diffuseTex3 , IN.texCoord ) ;
@@ -49,7 +49,7 @@ else if(type == 3){
 	  vec3 incident = normalize ( allLights[i].lightPos - IN.worldPos );
 	  float lambert = max (0.0 , dot ( incident , IN.normal ));
 	  if(lambert == 0 && type == 2) {
-		diffuse  = texture ( diffuseTex4 , IN.texCoord ) * 5 ;
+		diffuse  = texture ( diffuseTex4 , IN.texCoord ) * 10 ;
 	  }
 	  float dist = length ( allLights[i].lightPos - IN.worldPos );
 	  float atten = 1.0 - clamp ( dist / allLights[i].lightRadius , 0.0 , 1.0);
@@ -57,7 +57,7 @@ else if(type == 3){
 	  vec3 halfDir = normalize ( incident + viewDir );
 
 	  float rFactor = max (0.0 , dot ( halfDir , IN.normal ));
-	  float sFactor = pow ( rFactor , 20.0 );
+	  float sFactor = pow ( rFactor , 2.0 );
 	  vec3 colour = ( diffuse.rgb * allLights[i].lightColour.rgb );
 	  colour += ( allLights[i].lightColour.rgb * sFactor ) * 0.33;
 	  tempColour = vec4 ( colour * atten * lambert , diffuse.a );

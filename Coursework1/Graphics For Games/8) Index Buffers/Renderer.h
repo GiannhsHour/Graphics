@@ -35,6 +35,7 @@ protected:
 	void SortNodeLists();
 	void ClearNodeLists();
 	void DrawNodes();
+	void DrawSkybox();
 
 	SceneNode* root;
 	SceneNode * root1;
@@ -46,8 +47,9 @@ protected:
 	HeightMap* heightMap2;
 	Shader* sceneShader;
 	Shader* planetShader;
+	Shader* skyboxShader;
 	Frustum frameFrustum;
-
+		GLuint cubeMap;
 	vector<Light *> lights;
 
 	vector<SceneNode*> transparentNodeList;

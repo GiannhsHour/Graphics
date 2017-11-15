@@ -26,7 +26,7 @@ protected:
 	
 	Light * light;
 	Camera * camera;
-	
+	vector<Light *> lights;
 	GLuint cubeMap;
 	float waterRotate;
 };
