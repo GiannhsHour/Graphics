@@ -242,7 +242,7 @@ void Mesh::Draw() {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture[0]);
 
-	glActiveTexture(GL_TEXTURE3); // New !!!
+	glActiveTexture(GL_TEXTURE5); // New !!!
 	glBindTexture(GL_TEXTURE_2D, bumpTexture); // New !!!
 
 	glActiveTexture(GL_TEXTURE1);
@@ -250,6 +250,12 @@ void Mesh::Draw() {
 
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, texture[2]);
+
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, texture[3]);
+
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, texture[4]);
 
 	glBindVertexArray(arrayObject);
 	if (bufferObject[INDEX_BUFFER]) {// Added by the index buffers tut ...

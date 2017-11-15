@@ -67,7 +67,7 @@ protected:
 	Vector4 * colours;
 
 	// textures
-	GLuint texture[3];
+	GLuint texture[5];
 	Vector2* textureCoords;
 
 	// Index buffer

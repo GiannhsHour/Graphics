@@ -3,6 +3,8 @@
 uniform sampler2D diffuseTex;
 uniform sampler2D diffuseTex1;
 uniform sampler2D diffuseTex2;
+uniform sampler2D diffuseTex3;
+uniform sampler2D diffuseTex4;
 
 #define MAX_LIGHTS 10
 uniform int numLights;
@@ -29,20 +31,26 @@ void main ( void ) {
  vec4 diffuse;
  
 if(type == 0){
-		diffuse = texture ( diffuseTex , IN.texCoord ) ;
+		diffuse = texture ( diffuseTex , IN.texCoord * 3) * 50 ;
 	}
 else if(type == 1){
 			diffuse = texture ( diffuseTex1 , IN.texCoord ) ;
 				   }
-else{
-	diffuse  = texture ( diffuseTex2 , IN.texCoord*3);
-	}
+else if(type == 2){
+			diffuse = texture ( diffuseTex2 , IN.texCoord ) * 5 ;
+				   }
+else if(type == 3){
+			diffuse = texture ( diffuseTex3 , IN.texCoord ) ;
+				   }
 
   gl_FragColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);
   for(int i =0; i< numLights; i++){
       vec4 tempColour;
 	  vec3 incident = normalize ( allLights[i].lightPos - IN.worldPos );
 	  float lambert = max (0.0 , dot ( incident , IN.normal ));
+	  if(lambert == 0 && type == 2) {
+		diffuse  = texture ( diffuseTex4 , IN.texCoord ) * 5 ;
+	  }
 	  float dist = length ( allLights[i].lightPos - IN.worldPos );
 	  float atten = 1.0 - clamp ( dist / allLights[i].lightRadius , 0.0 , 1.0);
 	  vec3 viewDir = normalize ( cameraPos - IN.worldPos );

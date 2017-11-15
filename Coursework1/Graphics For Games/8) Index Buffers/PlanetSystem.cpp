@@ -22,11 +22,12 @@ PlanetSystem::PlanetSystem(void) {
 	planet2->SetModelScale(Vector3(300, 270, 300));
 	planet2->SetTransform(Matrix4::Translation(Vector3(1500, 0, 0)));
 	planet2->SetBoundingRadius(500);
+	planet2->setType(3);
 	planet1->AddChild(planet2);
 
 	planet3 = new SceneNode(sphere, Vector4(1, 0, 0, 1));
 	planet3->SetModelScale(Vector3(800, 750, 800));
-	planet3->SetTransform(Matrix4::Translation(Vector3(-6000, 0, -4000)));
+	planet3->SetTransform(Matrix4::Rotation(180, Vector3(1, 0, 0))*Matrix4::Translation(Vector3(-6000, 0, -4000)));
 	planet3->SetBoundingRadius(2000);
 	planet3->setType(2);
 	sun->AddChild(planet3);
@@ -35,12 +36,14 @@ PlanetSystem::PlanetSystem(void) {
 	planet4->SetModelScale(Vector3(200, 180, 200));
 	planet4->SetTransform(Matrix4::Translation(Vector3(1200, 0, 2000)));
 	planet4->SetBoundingRadius(300);
+	planet4->setType(3);
 	planet3->AddChild(planet4);
 
 	planet5 = new SceneNode(sphere, Vector4(1, 0, 0, 1));
 	planet5->SetModelScale(Vector3(150, 140, 150));
 	planet5->SetTransform(Matrix4::Translation(Vector3(-1000, 0, -1000)));
 	planet5->SetBoundingRadius(200);
+	planet5->setType(3);
 	planet3->AddChild(planet5);
 
 
