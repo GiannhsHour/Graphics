@@ -28,18 +28,16 @@ uniform int type;
 void main ( void ) {
  vec4 diffuse;
  
-if(type == 1){
-	if(IN.worldPos.y>500){
-			diffuse = texture ( diffuseTex1 , IN.texCoord ) * (1.0-(750-IN.worldPos .y)/250) + texture ( diffuseTex , IN.texCoord ) * ((750-IN.worldPos .y)/250);
-		}
-		else if(IN.worldPos.y<200){
-			diffuse = texture ( diffuseTex2 , IN.texCoord ) * (1.0-IN.worldPos.y/200) + texture ( diffuseTex , IN.texCoord ) * (IN.worldPos.y/200);
-		}
-		else{
-			diffuse  = texture ( diffuseTex , IN.texCoord);
-		}
-}
-  else diffuse  = texture ( diffuseTex , IN.texCoord );
+if(type == 0){
+		diffuse = texture ( diffuseTex , IN.texCoord ) ;
+	}
+else if(type == 1){
+			diffuse = texture ( diffuseTex1 , IN.texCoord ) ;
+				   }
+else{
+	diffuse  = texture ( diffuseTex2 , IN.texCoord*3);
+	}
+
   gl_FragColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);
   for(int i =0; i< numLights; i++){
       vec4 tempColour;

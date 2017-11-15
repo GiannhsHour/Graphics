@@ -2,20 +2,21 @@
 
 
 Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
-	CubeRobot::CreateCube(); // Important !
+	PlanetSystem::CreatePlanetSystem(); // Important !
 	camera = new Camera(0,180,Vector3(0,0,0));
 	heightMap1 = new HeightMap("../../Textures/terrain.raw");
 	heightMap2 = new HeightMap("../../Textures/terrain2.raw");
 	sceneShader = new Shader("../../Shaders/PerPixelVertex.glsl", "../../Shaders/PerPixelFragmentMultiLight.glsl");
+	planetShader = new Shader("../../Shaders/PerPixelVertex.glsl", "../../Shaders/PerPixelFragmentMultiLightPlanets.glsl");
 	currentShader = sceneShader;
-	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
-	lights.push_back(new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X ) * 1.5f, 1500.0f, (RAW_HEIGHT * HEIGHTMAP_Z )), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X )));
+	projMatrix = Matrix4::Perspective(1.0f, 20000.0f, (float)width / (float)height, 45.0f);
+	lights.push_back(new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X ) * 1.5f, 1500.0f, (RAW_HEIGHT * HEIGHTMAP_Z )), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X *2)));
 	Light* light2 = new Light(Vector3(1600,1700,1100), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X));
-	light2->SetColour(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+	//light2->SetColour(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
 	lights.push_back(light2);
 
 
-	if (!sceneShader->LinkProgram()){
+	if (!sceneShader->LinkProgram() || !planetShader->LinkProgram()){
 		return;
 	}
 	
@@ -33,7 +34,11 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 		SetTextureRepeating(heightMap1->GetTexture(i), true); 	
 	}
 	SetTextureRepeating(heightMap2->GetTexture(0), true);
-	root = new SceneNode();
+
+	root1 = new SceneNode();
+	root2 = new SceneNode();
+	root3 = new SceneNode();
+	root = root1;
 	
 
 	SceneNode* scene1 = new SceneNode();
@@ -43,19 +48,30 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	scene1->SetBoundingRadius(10000.0f);
 	scene1->SetMesh(heightMap1);
 	scene1->setType(1);
-	root->AddChild(scene1);
+	root1->AddChild(scene1);
 
 	SceneNode* scene2 = new SceneNode();
 	scene2->SetColour(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-	scene2->SetTransform(Matrix4::Translation(Vector3(0.0f, 3000.0f, 0.0f)));
+	scene2->SetTransform(Matrix4::Translation(Vector3(0.0f, 0.0f, 0.0f)));
 	scene2->SetModelScale(Vector3(2.0f, 2.0f, 2.0f));
 	scene2->SetBoundingRadius(10000.0f);
 	scene2->SetMesh(heightMap2);
 	scene2->setType(2);
-	root->AddChild(scene2);
+	root2->AddChild(scene2);
 
+	PlanetSystem * system = new PlanetSystem();
+	Mesh* sphere = system->getMesh();
+	system->setType(2);
+	sphere->SetTexture(SOIL_load_OGL_texture("../../Textures/sun.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
+	sphere->SetTexture(SOIL_load_OGL_texture("../../Textures/planet_red.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 1);
+	sphere->SetTexture(SOIL_load_OGL_texture("../../Textures/planet_green.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 2);
+	if (!sphere->GetTexture(0)) {
+		return;
+	}
+	SetTextureRepeating(sphere->GetTexture(0), true); SetTextureRepeating(sphere->GetTexture(1), true); SetTextureRepeating(sphere->GetTexture(2), true);
+	root3->AddChild(system);
 
-	CubeRobot *wall = new CubeRobot();
+	/*CubeRobot *wall = new CubeRobot();
 	Mesh* cube = wall->getMesh();
 	cube->SetTexture(SOIL_load_OGL_texture("../../Textures/wall.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
 	cube->SetTexture(SOIL_load_OGL_texture("../../Textures/wall.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 1);
@@ -65,7 +81,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	}
 	SetTextureRepeating(cube->GetTexture(0), true); SetTextureRepeating(cube->GetTexture(1), true); SetTextureRepeating(cube->GetTexture(2), true);
 	wall->SetTransform(Matrix4::Translation(Vector3(800.0f, 50.0f, 800.0f)));
-	wall->setType(2);
+	wall->setType(2);*/
 	//root->AddChild(wall);
 
 	glEnable(GL_DEPTH_TEST);
@@ -77,8 +93,9 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 }
 
 Renderer ::~Renderer(void) {
-	delete root;
-	CubeRobot::DeleteCube(); // Also important !
+	delete root1;
+	delete root2;
+	PlanetSystem::DeletePlanetSystem(); // Also important !
 	delete heightMap1;
 }
 
@@ -95,15 +112,14 @@ void Renderer::RenderScene() {
 
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-
-	currentShader = sceneShader;
+	if(root == root1 || root == root2) currentShader = sceneShader;
+	else if (root == root3) currentShader = planetShader;
 	glUseProgram(currentShader->GetProgram());
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex1"), 1);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex2"), 2);
 	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float *)& camera->GetPosition());
 
-	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
 
 	UpdateShaderMatrices();
 	SetShaderLight(lights);

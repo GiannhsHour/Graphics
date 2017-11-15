@@ -20,6 +20,15 @@ int main() {
 	float rotation = 2.0f;
 	while (w.UpdateWindow() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE)) {
 		light = renderer.getLight(0);
+		if (Window::GetKeyboard()->KeyDown(KEYBOARD_1)) {
+			renderer.setRoot(1);
+		}
+		if (Window::GetKeyboard()->KeyDown(KEYBOARD_2)) {
+			renderer.setRoot(2);
+		}
+		if (Window::GetKeyboard()->KeyDown(KEYBOARD_3)) {
+			renderer.setRoot(3);
+		}
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_P)) {
 			light->SetAmbient(light->GetAmbient() + 0.005f);
 		}

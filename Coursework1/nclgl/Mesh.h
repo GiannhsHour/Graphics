@@ -52,7 +52,7 @@ public:
 	void SetBumpMap(GLuint tex) { bumpTexture = tex; }
 	GLuint GetBumpMap() { return bumpTexture; }
 
-
+	void GenerateNormals();
 
 
 protected:
@@ -75,7 +75,7 @@ protected:
 	unsigned int *indices;
 
 	// lighting A
-	void GenerateNormals();
+	
 	Vector3* normals;
 
 	// lighting B
