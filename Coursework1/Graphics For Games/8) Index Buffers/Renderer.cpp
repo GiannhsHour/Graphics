@@ -15,10 +15,14 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	/*lights.push_back(new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X ) * 1.5f, 1500.0f, (RAW_HEIGHT * HEIGHTMAP_Z )), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X *2)));
 	Light* light2 = new Light(Vector3(1600,1700,1100), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X));*/
 	//light2->SetColour(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-	Light *sunLight = new Light(Vector3(2200, 370, 2500), Vector4(1, 1, 1, 1), 10000.0f);
+	Light *sunLight = new Light(Vector3(3200, 35, 3300), Vector4(1, 1, 1, 1), 10000.0f);
 	sunLight->SetAmbient(0.01f);
-	lights.push_back(sunLight);
+	planetSystemLights.push_back(sunLight);
 
+	Light *earthlight = new Light(Vector3(1600, 1700, 1200), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X));
+	earthlight->SetAmbient(0.001f);
+	planet1Lights.push_back(earthlight);
+	lights = planetSystemLights;
 
 	if (!sceneShader->LinkProgram() || !planetShader->LinkProgram() || !skyboxShader->LinkProgram()){
 		return;
@@ -29,8 +33,19 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 		TEXTUREDIR"/cubemap_galaxy/bkg1_top.JPG", TEXTUREDIR"/cubemap_galaxy/bkg1_bot.JPG",
 		TEXTUREDIR"/cubemap_galaxy/bkg1_front.JPG", TEXTUREDIR"/cubemap_galaxy/bkg1_back.JPG",
 		SOIL_LOAD_RGB,
-		SOIL_CREATE_NEW_ID, 0);	
-	quad -> SetTexture(SOIL_load_OGL_texture("../../Textures/wall.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS),0);	SetTextureRepeating(quad->GetTexture(0), true);
+		SOIL_CREATE_NEW_ID, 0);
+
+	cubeMap2 = SOIL_load_OGL_cubemap(
+		TEXTUREDIR"rusted_west.JPG", TEXTUREDIR"rusted_east.JPG",
+		TEXTUREDIR"rusted_up.JPG", TEXTUREDIR"rusted_down.JPG",
+		TEXTUREDIR"rusted_south.JPG", TEXTUREDIR"rusted_north.JPG",
+		SOIL_LOAD_RGB,
+		SOIL_CREATE_NEW_ID, 0);
+
+	
+	
+	quad -> SetTexture(SOIL_load_OGL_texture("../../Textures/wall.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS),0);
+	SetTextureRepeating(quad->GetTexture(0), true);
 	
 	heightMap1->SetTexture(SOIL_load_OGL_texture("../../Textures/wall.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS),0);
 	heightMap1->SetTexture(SOIL_load_OGL_texture("../../Textures/snow2.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 1);
@@ -102,7 +117,8 @@ Renderer ::~Renderer(void) {
 	PlanetSystem::DeletePlanetSystem();
 	delete heightMap1;
 	delete heightMap2;
-	delete skyboxShader;	currentShader = 0;
+	delete skyboxShader;
+	currentShader = 0;
 }
 
 void Renderer::UpdateScene(float msec) {
@@ -114,12 +130,15 @@ void Renderer::UpdateScene(float msec) {
 
 void Renderer::DrawSkybox() {
 	 glDepthMask(GL_FALSE);
-	 SetCurrentShader(skyboxShader);
+	 SetCurrentShader(skyboxShader);
+
 	 UpdateShaderMatrices();
-	 quad->Draw();
+	 quad->Draw(false);
 	
 	 glUseProgram(0);
-	 glDepthMask(GL_TRUE);}
+	 glDepthMask(GL_TRUE);
+}
+
 
 void Renderer::RenderScene() {
 	BuildNodeLists(root);
@@ -127,11 +146,23 @@ void Renderer::RenderScene() {
 
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-	DrawSkybox();
+	
 
 	
-	if(root == root1 || root == root2) SetCurrentShader(sceneShader);
-	else if (root == root3) SetCurrentShader(planetShader);
+	if (root == root1 || root == root2) {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap2);
+		DrawSkybox();
+		lights = planet1Lights;
+		SetCurrentShader(sceneShader);
+	}
+	else if (root == root3) {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap);
+		DrawSkybox();
+		lights = planetSystemLights;
+		SetCurrentShader(planetShader);
+	}
 	glUseProgram(currentShader->GetProgram());
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex1"), 1);
@@ -145,7 +176,7 @@ void Renderer::RenderScene() {
 	UpdateShaderMatrices();
 	SetShaderLight(lights);
 	glEnable(GL_DEPTH_TEST);
-	//heightMap->Draw();
+	//heightMap1->Draw();
 	DrawNodes();
 
 	glUseProgram(0);

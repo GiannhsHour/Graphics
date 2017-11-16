@@ -1,6 +1,7 @@
 #include "PlanetSystem.h"
 
 Mesh * PlanetSystem::sphere = NULL;
+Mesh * PlanetSystem::spaceship = NULL;
 
 PlanetSystem::PlanetSystem(void) {
 	
@@ -45,6 +46,15 @@ PlanetSystem::PlanetSystem(void) {
 	planet5->SetBoundingRadius(200);
 	planet5->setType(3);
 	planet3->AddChild(planet5);
+
+	/*ship1 = new SceneNode(spaceship, Vector4(1, 0, 0, 1));
+	ship1->SetModelScale(Vector3(20000, 20000, 20000));
+	ship1->SetTransform(Matrix4::Translation(Vector3(1000, 0, -2000)));
+	ship1->SetBoundingRadius(20000);
+	ship1->setType(3);
+	planet5->AddChild(ship1);*/
+
+
 
 
 	

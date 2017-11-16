@@ -38,7 +38,7 @@ public:
 	Mesh(void);
 	~Mesh(void);
 
-	virtual void Draw();
+	virtual void Draw(bool texture0 = true);
 	static Mesh * GenerateTriangle();
 
 	// textures
@@ -53,6 +53,7 @@ public:
 	GLuint GetBumpMap() { return bumpTexture; }
 
 	void GenerateNormals();
+	int getNumVertices() { return numVertices; }
 
 
 protected:

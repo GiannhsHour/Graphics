@@ -49,8 +49,14 @@ protected:
 	Shader* planetShader;
 	Shader* skyboxShader;
 	Frustum frameFrustum;
-		GLuint cubeMap;
+	
+	GLuint cubeMap;
+	GLuint cubeMap2;
+
 	vector<Light *> lights;
+	vector<Light *> planetSystemLights;
+	vector<Light *> planet1Lights;
+	vector<Light *> planet2Lights;
 
 	vector<SceneNode*> transparentNodeList;
 	vector<SceneNode*> nodeList;

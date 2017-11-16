@@ -71,11 +71,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Planet1Scene.cpp" />
     <ClCompile Include="PlanetSystem.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="tutorial8.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Planet1Scene.h" />
     <ClInclude Include="PlanetSystem.h" />
     <ClInclude Include="Renderer.h" />
   </ItemGroup>

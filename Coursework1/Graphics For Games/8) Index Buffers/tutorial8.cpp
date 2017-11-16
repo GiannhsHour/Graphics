@@ -14,12 +14,12 @@ int main() {
 	if (!renderer.HasInitialised()) {
 		return -1;
 	}
-
+	light = renderer.getLight(0);
 	w.LockMouseToWindow(true);
 	w.ShowOSPointer(false);
 	float rotation = 2.0f;
 	while (w.UpdateWindow() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE)) {
-		light = renderer.getLight(0);
+		
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_1)) {
 			renderer.setRoot(1);
 		}
