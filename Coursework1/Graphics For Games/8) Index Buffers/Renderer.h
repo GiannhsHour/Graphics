@@ -5,7 +5,9 @@
 #include "../../nclgl/Frustum.h"
 #include "../../nclgl/HeightMap.h"
 #include "PlanetSystem.h"
+#include "Planet1Scene.h"
 #include <algorithm>
+#include <time.h> 
 
 class Renderer : public OGLRenderer {
 public:
@@ -29,6 +31,9 @@ public:
 			break;
 		}
 	}
+
+	void jump() { jump_bool = true; }
+
 protected:
 	void DrawNode(SceneNode * n);
 	void BuildNodeLists(SceneNode* from);
@@ -37,6 +42,8 @@ protected:
 	void DrawNodes();
 	void DrawSkybox();
 
+	void jump(float msec);
+	clock_t t;
 	SceneNode* root;
 	SceneNode * root1;
 	SceneNode * root2;
@@ -60,4 +67,12 @@ protected:
 
 	vector<SceneNode*> transparentNodeList;
 	vector<SceneNode*> nodeList;
+
+
+	bool jump_bool = false;
+	float timeIn = 0.0f;
+	float timeIn2 = 0.0f;
+	bool time_flag = true;
+	bool time_flag2 = true;
+	bool alt_bool = false;
 };

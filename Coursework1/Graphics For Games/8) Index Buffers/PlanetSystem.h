@@ -12,10 +12,6 @@ public:
 		OBJMesh * m = new OBJMesh();
 		m -> LoadOBJMesh(MESHDIR"sphere_earth.obj");
 		sphere = m;
-		OBJMesh * s = new OBJMesh();
-		s->LoadOBJMesh(MESHDIR"skeleton02.obj");
-		int x = s->getNumVertices();
-		spaceship = s;
 	}
 	static void DeletePlanetSystem() { delete sphere; }
 	Mesh * getMesh(){return sphere;}

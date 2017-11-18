@@ -7,8 +7,8 @@ in Vertex {
 	vec3 normal;
 } IN;
 
-out vec4 gl_FragColor;
+out vec4 FragColor;
 
 void main (void) {
-	gl_FragColor = texture(cubeTex, normalize(IN.normal));
+	FragColor = texture(cubeTex, normalize(IN.normal));
 }

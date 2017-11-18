@@ -5,7 +5,7 @@
 
 int main() {
 	Light * light;
-	Window w("Per Pixel Lighting!", 1024, 768, false);
+	Window w("Per Pixel Lighting!", 800, 600, false);
 	if (!w.HasInitialised()) {
 		return -1;
 	}
@@ -14,12 +14,12 @@ int main() {
 	if (!renderer.HasInitialised()) {
 		return -1;
 	}
-	light = renderer.getLight(0);
+	
 	w.LockMouseToWindow(true);
 	w.ShowOSPointer(false);
 	float rotation = 2.0f;
 	while (w.UpdateWindow() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE)) {
-		
+		light = renderer.getLight(0);
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_1)) {
 			renderer.setRoot(1);
 		}
@@ -40,8 +40,9 @@ int main() {
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_K))
 			light->SetRadius(light->GetRadius() - 25.0f);
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_C)) {
-			Vector4 colour = light->GetColour();
-			light->SetColour(Vector4(colour.x*1.1f, colour.y*1.0f, colour.z*1.0f, colour.w*1.0f));
+			/*Vector4 colour = light->GetColour();
+			light->SetColour(Vector4(colour.x*1.1f, colour.y*1.0f, colour.z*1.0f, colour.w*1.0f));*/
+			renderer.jump();
 		}
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_R)) {
 			//cout << renderer.getLight()->GetPosition().x << " " << renderer.getLight()->GetPosition().y << " " << renderer.getLight()->GetPosition().z << endl;

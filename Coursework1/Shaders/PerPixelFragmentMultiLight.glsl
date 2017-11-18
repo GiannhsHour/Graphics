@@ -24,7 +24,7 @@ uniform int type;
  vec3 worldPos ;
  } IN ;
 
- out vec4 gl_FragColor ;
+ out vec4 FragColor ;
 void main ( void ) {
  vec4 diffuse;
  
@@ -40,7 +40,7 @@ if(type == 1){
 		}
 }
   else diffuse  = texture ( diffuseTex , IN.texCoord );
-  gl_FragColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+  FragColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);
   for(int i =0; i< numLights; i++){
       vec4 tempColour;
 	  vec3 incident = normalize ( allLights[i].lightPos - IN.worldPos );
@@ -56,7 +56,7 @@ if(type == 1){
 	  colour += ( allLights[i].lightColour.rgb * sFactor ) * 0.33;
 	  tempColour = vec4 ( colour * atten * lambert , diffuse.a );
 	  tempColour.rgb += ( diffuse.rgb * allLights[i].lightColour.rgb ) * allLights[i].ambient;
-	  gl_FragColor += tempColour;
+	  FragColor += tempColour;
   }
 }
 

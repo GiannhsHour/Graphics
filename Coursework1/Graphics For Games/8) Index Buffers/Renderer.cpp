@@ -1,10 +1,62 @@
 #include "Renderer.h"
 
 
+
+void Renderer::jump(float time) {
+	if (jump_bool) {
+		if (time_flag2) {
+			//timeIn2 einai h xronikh stigmh pou ksekinaei to alma
+			//ypologizetai mia fora logw tou time_flag2
+			timeIn2 = time;
+			time_flag2 = false;
+		}
+		//taxuthta almatos
+		float jump_speed = 5.0f*0.0008f;
+		//ti tha prosthesei ston aksona "y"
+		float sine = sin((time - timeIn2)*jump_speed);
+
+		//an einai arnhtiko shmainei oti h camera ksana sikwnetai
+		//alla pio grhgora kai me mikroteri apostash
+		if (sine<0.0f) {
+			//jump_speed * 4.0f gia na sikwthei 4 fores pio grhgora kai olo dia 4 gia 4 fores mikroterh apostash
+			sine = -sin((time - timeIn2)*jump_speed*4.0f) / 4.0f;
+		}
+		else sine = abs(sine);
+
+		//to alma oloklirwnetai se:
+		// PI o xronos gia na sikwthei kai na katevei kai
+		// PI/4 o xronos ths epanaforas, sunolika 5PI/4
+		// kai olo auto dia to jump_speed gia na metatrepsoume se pragmatiko xrono
+		if (time - timeIn2 < (5.0f / 4.0f)*PI / jump_speed) {
+			float high = 0.6f*sine;
+			//float x = cameraTransform->GetTranslation().x;
+			float x = 0;
+			//float y = 1.6f + high;
+			float y = 1.6f + high;
+			//float z = cameraTransform->GetTranslation().z;
+			float z = 0;
+			camera->SetPosition(Matrix4::Translation(Vector3(x, y, z))*camera->GetPosition());
+			//cameraTransform->SetTranslation(x, y, z);
+		//	if (alt_bool&&time - timeIn2 < (PI / jump_speed)) camera_rotate -= speed*0.75;
+		}
+		else {
+			jump_bool = false;
+			time_flag2 = true;
+			alt_bool = false;
+			float x = 0;
+			float y = 1.6f;
+			float z = 0;
+			camera->SetPosition(Matrix4::Translation(Vector3(x, y, z))*camera->GetPosition());
+		}
+	}
+}
+
 Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
-	PlanetSystem::CreatePlanetSystem(); // Important !
+	t = clock();
+	PlanetSystem::CreatePlanetSystem(); 
+	Planet1Scene::CreatePlanet1Scene();
 	quad = Mesh::GenerateQuad();
-	camera = new Camera(0,180,Vector3(0,0,0));
+	camera = new Camera(0,180,Vector3(3000,400,4500));
 	heightMap1 = new HeightMap("../../Textures/terrain.raw");
 	heightMap2 = new HeightMap("../../Textures/terrain2.raw");
 	sceneShader = new Shader("../../Shaders/PerPixelVertex.glsl", "../../Shaders/PerPixelFragmentMultiLight.glsl");
@@ -12,10 +64,8 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	skyboxShader = new Shader("../../Shaders/skyboxVertex.glsl", "../../Shaders/skyboxFragment.glsl");
 	currentShader = sceneShader;
 	projMatrix = Matrix4::Perspective(1.0f, 20000.0f, (float)width / (float)height, 45.0f);
-	/*lights.push_back(new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X ) * 1.5f, 1500.0f, (RAW_HEIGHT * HEIGHTMAP_Z )), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X *2)));
-	Light* light2 = new Light(Vector3(1600,1700,1100), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X));*/
-	//light2->SetColour(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-	Light *sunLight = new Light(Vector3(3200, 35, 3300), Vector4(1, 1, 1, 1), 10000.0f);
+
+	Light *sunLight = new Light(Vector3(0, 0, 0), Vector4(1, 1, 1, 1), 10000.0f);
 	sunLight->SetAmbient(0.01f);
 	planetSystemLights.push_back(sunLight);
 
@@ -49,7 +99,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	
 	heightMap1->SetTexture(SOIL_load_OGL_texture("../../Textures/wall.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS),0);
 	heightMap1->SetTexture(SOIL_load_OGL_texture("../../Textures/snow2.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 1);
-	heightMap1->SetTexture(SOIL_load_OGL_texture("../../Textures/new_grass.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 2);
+	heightMap1->SetTexture(SOIL_load_OGL_texture("../../Textures/grass.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 2);
 
 	heightMap2->SetTexture(SOIL_load_OGL_texture("../../Textures/wall.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
 
@@ -77,6 +127,15 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	scene1->setType(1);
 	root1->AddChild(scene1);
 
+	Planet1Scene * planet1scene = new Planet1Scene();
+	planet1scene->SetTransform(Matrix4::Translation(Vector3(3500, 40.0f, 5000.0f))*Matrix4::Scale(Vector3(2.0f,1.2f,1.2f)));
+	planet1scene->getWallMesh()->SetTexture(SOIL_load_OGL_texture("../../Textures/house/wall.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
+	planet1scene->getPlantMesh()->SetTexture(SOIL_load_OGL_texture("../../Textures/grass.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
+	SetTextureRepeating(planet1scene->getWallMesh()->GetTexture(0), true);
+	SetTextureRepeating(planet1scene->getPlantMesh()->GetTexture(0), true);
+	scene1->AddChild(planet1scene);
+	
+
 	SceneNode* scene2 = new SceneNode();
 	scene2->SetColour(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 	scene2->SetTransform(Matrix4::Translation(Vector3(0.0f, 0.0f, 0.0f)));
@@ -85,6 +144,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	scene2->SetMesh(heightMap2);
 	scene2->setType(2);
 	root2->AddChild(scene2);
+
 
 	PlanetSystem * system = new PlanetSystem();
 	Mesh* sphere = system->getMesh();
@@ -122,8 +182,10 @@ Renderer ::~Renderer(void) {
 }
 
 void Renderer::UpdateScene(float msec) {
+	
 	camera -> UpdateCamera(msec);
 	viewMatrix = camera -> BuildViewMatrix();
+	//jump((float)(clock() - t));
 	frameFrustum.FromMatrix(projMatrix*viewMatrix);
 	root -> Update(msec);
 }
@@ -145,8 +207,6 @@ void Renderer::RenderScene() {
 	SortNodeLists();
 
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-	
 
 	
 	if (root == root1 || root == root2) {
