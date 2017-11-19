@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <time.h> 
 
+#define SHADOWSIZE 2048
+
 class Renderer : public OGLRenderer {
 public:
 	Renderer(Window & parent);
@@ -41,6 +43,8 @@ protected:
 	void ClearNodeLists();
 	void DrawNodes();
 	void DrawSkybox();
+	void DrawShadowScene();
+	void DrawSun();
 
 	void jump(float msec);
 	clock_t t;
@@ -52,9 +56,15 @@ protected:
 	Mesh* quad;
 	HeightMap* heightMap1;
 	HeightMap* heightMap2;
+	Mesh* earth_sun;
 	Shader* sceneShader;
 	Shader* planetShader;
 	Shader* skyboxShader;
+	Shader * shadowShader;
+
+	GLuint shadowTex;
+	GLuint shadowFBO;
+
 	Frustum frameFrustum;
 	
 	GLuint cubeMap;

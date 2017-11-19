@@ -62,19 +62,24 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	sceneShader = new Shader("../../Shaders/PerPixelVertex.glsl", "../../Shaders/PerPixelFragmentMultiLight.glsl");
 	planetShader = new Shader("../../Shaders/PerPixelVertex.glsl", "../../Shaders/PerPixelFragmentMultiLightPlanets.glsl");
 	skyboxShader = new Shader("../../Shaders/skyboxVertex.glsl", "../../Shaders/skyboxFragment.glsl");
+	shadowShader = new Shader("../../Shaders/shadowVert.glsl", "../../Shaders/shadowFrag.glsl");
 	currentShader = sceneShader;
 	projMatrix = Matrix4::Perspective(1.0f, 20000.0f, (float)width / (float)height, 45.0f);
+	 
+	OBJMesh * m = new OBJMesh();
+	m->LoadOBJMesh(MESHDIR"sphere_earth.obj");
+	earth_sun = m;
 
 	Light *sunLight = new Light(Vector3(0, 0, 0), Vector4(1, 1, 1, 1), 10000.0f);
 	sunLight->SetAmbient(0.01f);
 	planetSystemLights.push_back(sunLight);
 
-	Light *earthlight = new Light(Vector3(1600, 1700, 1200), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X));
+	Light *earthlight = new Light(Vector3(10000, 4000, 4600), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X)*2);
 	earthlight->SetAmbient(0.001f);
 	planet1Lights.push_back(earthlight);
 	lights = planetSystemLights;
 
-	if (!sceneShader->LinkProgram() || !planetShader->LinkProgram() || !skyboxShader->LinkProgram()){
+	if (!sceneShader->LinkProgram() || !planetShader->LinkProgram() || !skyboxShader->LinkProgram() || !shadowShader->LinkProgram()){
 		return;
 	}
 
@@ -172,6 +177,27 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	}
 	SetTextureRepeating(sphere->GetBumpMap(2),true);
 	root3->AddChild(system);
+	//shadow
+	glGenTextures(1, &shadowTex);
+	glBindTexture(GL_TEXTURE_2D, shadowTex);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+		SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE,
+		GL_COMPARE_R_TO_TEXTURE);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glGenFramebuffers(1, &shadowFBO);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowTex, 0);
+	glDrawBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
@@ -212,19 +238,60 @@ void Renderer::DrawSkybox() {
 	 glDepthMask(GL_TRUE);
 }
 
+void Renderer::DrawShadowScene() {
+	glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
+
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	glViewport(0, 0, SHADOWSIZE, SHADOWSIZE);
+
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+
+	SetCurrentShader(shadowShader);
+	Vector3 target = Vector3(0, 0, 0);
+	if (root == root1) {
+		target = Vector3(3500, 400, 5000);
+	}
+	viewMatrix = Matrix4::BuildViewMatrix(lights[0]->GetPosition(), target);
+	shadowMatrix = biasMatrix *(projMatrix * viewMatrix);
+
+	UpdateShaderMatrices();
+
+	DrawNodes();
+
+	glUseProgram(0);
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	glViewport(0, 0, width, height);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
+
+void Renderer::DrawSun() {
+	modelMatrix = Matrix4::Translation(Vector3(lights[0]->GetPosition().x, lights[0]->GetPosition().y, lights[0]->GetPosition().z))*
+	Matrix4::Scale(Vector3(200, 200, 200));
+	Matrix4 tempMatrix = shadowMatrix * modelMatrix;
+
+	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "shadowMatrix"), 1, false, *& tempMatrix.values);
+	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "modelMatrix"), 1, false, *& modelMatrix.values);
+
+	earth_sun->Draw();
+
+}
+
 
 void Renderer::RenderScene() {
 	BuildNodeLists(root);
 	SortNodeLists();
 
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
 	
 	if (root == root1 || root == root2) {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap2);
 		DrawSkybox();
 		lights = planet1Lights;
+		DrawShadowScene();
 		SetCurrentShader(sceneShader);
 	}
 	else if (root == root3) {
@@ -232,9 +299,10 @@ void Renderer::RenderScene() {
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap);
 		DrawSkybox();
 		lights = planetSystemLights;
+		DrawShadowScene();
 		SetCurrentShader(planetShader);
 	}
-	glUseProgram(currentShader->GetProgram());
+	//glUseProgram(currentShader->GetProgram());
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex1"), 1);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex2"), 2);
@@ -245,16 +313,21 @@ void Renderer::RenderScene() {
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex2"), 7);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex3"), 8);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex4"), 9);
-
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "shadowTex"), 10);
 
 	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float *)& camera->GetPosition());
+	SetShaderLight(lights);
 
+	glActiveTexture(GL_TEXTURE10);
+	glBindTexture(GL_TEXTURE_2D, shadowTex);
+
+	viewMatrix = camera->BuildViewMatrix();
 
 	UpdateShaderMatrices();
 	SetShaderLight(lights);
-	glEnable(GL_DEPTH_TEST);
-	//heightMap1->Draw();
+
 	DrawNodes();
+	DrawSun();
 
 	glUseProgram(0);
 	SwapBuffers();
