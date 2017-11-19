@@ -16,7 +16,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)	{
 	emitter = new ParticleEmitter();
 	camera  = new Camera(0,0,Vector3(0,0,250.0f));
 
-	projMatrix = Matrix4::Perspective(1.0f,10000.0f,(float)width / (float)height, 45.0f);
+	projMatrix = Matrix4::Perspective(1.0f,18000.0f,(float)width / (float)height, 45.0f);
 
 	init = true;
 }
@@ -41,10 +41,10 @@ void Renderer::RenderScene()	{
 
 	SetShaderParticleSize(emitter->GetParticleSize());
 	emitter->SetParticleSize(8.0f);
-	emitter->SetParticleVariance(1.0f);
+	emitter->SetParticleVariance(0.2f);
 	emitter->SetLaunchParticles(16.0f);
 	emitter->SetParticleLifetime(2000.0f);
-	emitter->SetParticleSpeed(0.1f);
+	emitter->SetParticleSpeed(0.5f);
 	UpdateShaderMatrices();
 
 	emitter->Draw();

@@ -6,7 +6,7 @@ Mesh * PlanetSystem::spaceship = NULL;
 PlanetSystem::PlanetSystem(void) {
 	
 	sun = new SceneNode(sphere, Vector4(1, 0, 0, 1));
-	sun->SetModelScale(Vector3(2000, 1900, 2000));
+	sun->SetModelScale(Vector3(1800, 1700, 1800));
 	sun->SetTransform(Matrix4::Translation(Vector3(200, 0, 0)));
 	sun->SetBoundingRadius(3000.0f);
 	sun->setType(0);
@@ -47,23 +47,19 @@ PlanetSystem::PlanetSystem(void) {
 	planet5->setType(3);
 	planet3->AddChild(planet5);
 
-	/*ship1 = new SceneNode(spaceship, Vector4(1, 0, 0, 1));
-	ship1->SetModelScale(Vector3(20000, 20000, 20000));
-	ship1->SetTransform(Matrix4::Translation(Vector3(1000, 0, -2000)));
-	ship1->SetBoundingRadius(20000);
-	ship1->setType(3);
-	planet5->AddChild(ship1);*/
-
-
-
 
 	
 
 }
 
 void PlanetSystem::Update(float msec) {
-	transform = transform * Matrix4::Rotation(-msec / 500.0f, Vector3(0, 1, 0));
+	//transform = transform * Matrix4::Rotation(-msec / 500.0f, Vector3(0, 1, 0));
 	sun -> SetTransform(sun -> GetTransform() *Matrix4::Rotation(-msec / 400.0f, Vector3(0, 1, 0)));
+
+	/*planet1->SetTransform(Matrix4::Translation(sun->GetWorldTransform().GetPositionVector())
+		*Matrix4::Rotation(1.0f, Vector3(0, 1, 0))
+		*Matrix4::Translation(-(sun->GetWorldTransform().GetPositionVector()))
+		*planet1->GetTransform());*/
 
 	planet1 -> SetTransform(planet1 -> GetTransform() *Matrix4::Rotation(-msec / 300.0f, Vector3(1, 1, 0)));
 	planet2 ->  SetTransform(planet2-> GetTransform() *Matrix4::Rotation(-msec / 250.0f, Vector3(0, 1, 0)));

@@ -28,7 +28,7 @@ ParticleEmitter::ParticleEmitter(void)	{
 	//texture = SOIL_load_OGL_texture("../Textures/particle.tga",
 	//SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_COMPRESS_TO_DXT);
 
-	texture = SOIL_load_OGL_texture(TEXTUREDIR"nyan.png",
+	texture[0] = SOIL_load_OGL_texture(TEXTUREDIR"new_grass.JPG",
 		SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_COMPRESS_TO_DXT);
 }
 
@@ -127,7 +127,9 @@ Particle* ParticleEmitter::GetFreeParticle()	{
 	//Now we have to reset its values - if it was popped off the
 	//free list, it'll still have the values of its 'previous life'
 
-	p->colour		= Vector4(RAND(),RAND(),RAND(),1.0);
+	//p->colour		= Vector4(RAND(),RAND(),RAND(),1.0);
+	p->colour = Vector4(0.5,0.5,0.5, 1.0);
+
 	p->direction	= initialDirection;
 	p->direction.x += ((RAND()-RAND()) * particleVariance);
 	p->direction.y += ((RAND()-RAND()) * particleVariance);
@@ -215,7 +217,7 @@ void ParticleEmitter::Draw()	{
 
 	//And now do our usual Drawing stuff...
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	glBindTexture(GL_TEXTURE_2D, texture[0]);
 	glDrawArrays(GL_POINTS,  0, particles.size());	// draw ordered list of vertices
 	glBindTexture(GL_TEXTURE_2D, 0);
 

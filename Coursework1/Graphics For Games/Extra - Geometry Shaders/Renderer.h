@@ -16,8 +16,8 @@ single vertices into quads.
 
 #pragma once
 
-#include "../../NCLGL/OGLRenderer.h"
-#include "../../NCLGL/Camera.h"
+#include "../../nclgl/OGLRenderer.h"
+#include "../../nclgl/Camera.h"
 #include "ParticleEmitter.h"	//A new class!
 
 class Renderer : public OGLRenderer	{

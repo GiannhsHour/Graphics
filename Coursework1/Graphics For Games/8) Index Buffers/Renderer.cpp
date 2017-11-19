@@ -74,8 +74,8 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	sunLight->SetAmbient(0.01f);
 	planetSystemLights.push_back(sunLight);
 
-	Light *earthlight = new Light(Vector3(10000, 4000, 4600), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X)*2);
-	earthlight->SetAmbient(0.001f);
+	Light *earthlight = new Light(Vector3(10000, 4000, 4600), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X)*2.5f);
+	earthlight->SetAmbient(0.01f);
 	planet1Lights.push_back(earthlight);
 	lights = planetSystemLights;
 
@@ -99,9 +99,6 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 
 	
 	
-	quad -> SetTexture(SOIL_load_OGL_texture("../../Textures/wall.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS),0);
-	SetTextureRepeating(quad->GetTexture(0), true);
-	
 	heightMap1->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"rock.PNG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS),0);
 	heightMap1->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"snow.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 1);
 	heightMap1->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"new_grass.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 2);
@@ -110,17 +107,19 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	heightMap1->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"new_grass_norm.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 2);
 
 
-	heightMap2->SetTexture(SOIL_load_OGL_texture("../../Textures/wall.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
+	heightMap2->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"red_planet.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
+	heightMap2->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"red_planet_normal.PNG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
+
 
 	//Planet 1
-	if (!heightMap1->GetTexture(0) || !cubeMap || !quad->GetTexture(0)) {
+	if (!heightMap1->GetTexture(0) || !cubeMap ) {
 		return;
 	}
 	for (int i = 0; i < 3; i++) {
 		SetTextureRepeating(heightMap1->GetTexture(i), true); 
 		SetTextureRepeating(heightMap1->GetBumpMap(i), true);
 	}
-	SetTextureRepeating(heightMap2->GetTexture(0), true);
+	SetTextureRepeating(heightMap2->GetTexture(0), true); SetTextureRepeating(heightMap2->GetBumpMap(0), true);
 
 	root1 = new SceneNode();
 	root2 = new SceneNode();
@@ -138,9 +137,9 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	root1->AddChild(scene1);
 
 	Planet1Scene * planet1scene = new Planet1Scene();
-	planet1scene->SetTransform(Matrix4::Translation(Vector3(3500, 40.0f, 5000.0f))*Matrix4::Scale(Vector3(1.8f,1.0f,1.0f)));
-	planet1scene->getWallMesh()->SetTexture(SOIL_load_OGL_texture("../../Textures/house/wall.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
-	planet1scene->getWallMesh()->SetBumpMap(SOIL_load_OGL_texture("../../Textures/house/wall_norm.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
+	planet1scene->SetTransform(Matrix4::Translation(Vector3(3500, 40.0f, 5000.0f))*Matrix4::Rotation(-10,Vector3(0,1,0))*Matrix4::Scale(Vector3(1.0f, 0.6f, 0.6f)));
+	planet1scene->getWallMesh()->SetTexture(SOIL_load_OGL_texture("../../Textures/wall.PNG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
+	planet1scene->getWallMesh()->SetBumpMap(SOIL_load_OGL_texture("../../Textures/wall_normal.PNG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
 	planet1scene->getPlantMesh()->SetTexture(SOIL_load_OGL_texture("../../Textures/grass.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
 	SetTextureRepeating(planet1scene->getWallMesh()->GetTexture(0), true);
 	SetTextureRepeating(planet1scene->getWallMesh()->GetBumpMap(0), true);
@@ -160,11 +159,13 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 
 	PlanetSystem * system = new PlanetSystem();
 	Mesh* sphere = system->getMesh();
-	sphere->SetTexture(SOIL_load_OGL_texture("../../Textures/sun.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
-	sphere->SetTexture(SOIL_load_OGL_texture("../../Textures/planet_red.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 1);
+	sphere->SetTexture(SOIL_load_OGL_texture("../../Textures/sun.PNG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
+	sphere->SetTexture(SOIL_load_OGL_texture("../../Textures/red_planet.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 1);
 	sphere->SetTexture(SOIL_load_OGL_texture("../../Textures/4096_earth.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 2);
 	sphere->SetTexture(SOIL_load_OGL_texture("../../Textures/moon.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 3);
 	sphere->SetTexture(SOIL_load_OGL_texture("../../Textures/4096_night_lights.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 4);
+	sphere->SetBumpMap(SOIL_load_OGL_texture("../../Textures/sun_normal.PNG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
+	sphere->SetBumpMap(SOIL_load_OGL_texture("../../Textures/red_planet_normal.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 1);
 	sphere->SetBumpMap(SOIL_load_OGL_texture("../../Textures/4096_normal.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 2);
 	for (int i = 0; i < 5; i++){
 		if (!sphere->GetTexture(i)) {
@@ -175,7 +176,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	if (!sphere->GetBumpMap(2)) {
 		return;
 	}
-	SetTextureRepeating(sphere->GetBumpMap(2),true);
+	SetTextureRepeating(sphere->GetBumpMap(0),true); SetTextureRepeating(sphere->GetBumpMap(1), true); SetTextureRepeating(sphere->GetBumpMap(2), true);
 	root3->AddChild(system);
 	//shadow
 	glGenTextures(1, &shadowTex);
