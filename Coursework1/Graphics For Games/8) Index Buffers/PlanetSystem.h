@@ -12,6 +12,9 @@ public:
 		OBJMesh * m = new OBJMesh();
 		m -> LoadOBJMesh(MESHDIR"sphere_earth.obj");
 		sphere = m;
+		/*sphere->GenerateNormals();
+		sphere->GenerateTangents();
+		sphere->BufferData();*/
 	}
 	static void DeletePlanetSystem() { delete sphere; }
 	Mesh * getMesh(){return sphere;}

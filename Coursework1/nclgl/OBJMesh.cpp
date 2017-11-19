@@ -272,7 +272,7 @@ void	OBJMesh::SetTexturesFromMTL(string &mtlFile, string &mtlType) {
 		}
 #ifdef OBJ_USE_TANGENTS_BUMPMAPS
 		if(!i->second.bump.empty())	{
-			bumpTexture = i->second.bumpNum;
+			bumpTexture[0] = i->second.bumpNum;
 		}
 #endif
 		return;

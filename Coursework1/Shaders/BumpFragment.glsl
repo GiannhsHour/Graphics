@@ -17,7 +17,7 @@ uniform float lightRadius ;
  vec3 worldPos ;
  } IN ;
 
- out vec4 gl_FragColor ;
+ out vec4 FragColor ;
 void main ( void ) {
  vec4 diffuse = texture ( diffuseTex , IN . texCoord );
  // New !
@@ -26,7 +26,7 @@ void main ( void ) {
  vec3 normal = normalize ( TBN * ( texture ( bumpTex ,
  IN . texCoord ). rgb * 2.0 - 1.0));
 vec3 incident = normalize ( lightPos - IN . worldPos );
- float lambert = max (0.0 , dot ( incident , IN.normal )); // Different !
+ float lambert = max (0.0 , dot ( incident , normal )); // Different !
 
  float dist = length ( lightPos - IN . worldPos );
  float atten = 1.0 - clamp ( dist / lightRadius , 0.0 , 1.0);
@@ -34,11 +34,11 @@ vec3 incident = normalize ( lightPos - IN . worldPos );
  vec3 viewDir = normalize ( cameraPos - IN . worldPos );
  vec3 halfDir = normalize ( incident + viewDir );
 
- float rFactor = max (0.0 , dot ( halfDir , IN.normal )); // Different !
+ float rFactor = max (0.0 , dot ( halfDir , normal )); // Different !
  float sFactor = pow ( rFactor , 33.0 );
 
  vec3 colour = ( diffuse . rgb * lightColour . rgb );
  colour += ( lightColour . rgb * sFactor ) * 0.33;
- gl_FragColor = vec4 ( colour * atten * lambert , diffuse . a );
- gl_FragColor . rgb += ( diffuse . rgb * lightColour . rgb ) * 0.1;
+ FragColor = vec4 ( colour * atten * lambert , diffuse . a );
+ FragColor . rgb += ( diffuse . rgb * lightColour . rgb ) * 0.1;
  }

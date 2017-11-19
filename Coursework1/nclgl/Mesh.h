@@ -49,15 +49,17 @@ public:
 	static Mesh* GenerateQuad();
 
 	// lighting B
-	void SetBumpMap(GLuint tex) { bumpTexture = tex; }
-	GLuint GetBumpMap() { return bumpTexture; }
+	void SetBumpMap(GLuint tex, int pos) { bumpTexture[pos] = tex; }
+	GLuint GetBumpMap(int pos) { return bumpTexture[pos]; }
 
 	void GenerateNormals();
+	void GenerateTangents();
 	int getNumVertices() { return numVertices; }
+	void BufferData();
 
 
 protected:
-	void BufferData();
+	
 
 	GLuint arrayObject;
 	GLuint bufferObject[MAX_BUFFER];
@@ -69,6 +71,7 @@ protected:
 
 	// textures
 	GLuint texture[5];
+	GLuint bumpTexture[5];
 	Vector2* textureCoords;
 
 	// Index buffer
@@ -80,13 +83,12 @@ protected:
 	Vector3* normals;
 
 	// lighting B
-	void GenerateTangents();
 	Vector3 GenerateTangent(const Vector3 &a, const Vector3 &b,
 		const Vector3 &c, const Vector2 & ta,
 		const Vector2 & tb, const Vector2 & tc);
 	
 	Vector3* tangents;
-	GLuint bumpTexture;
+	
 
 
 };

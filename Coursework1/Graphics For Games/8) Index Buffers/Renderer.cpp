@@ -97,18 +97,23 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	quad -> SetTexture(SOIL_load_OGL_texture("../../Textures/wall.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS),0);
 	SetTextureRepeating(quad->GetTexture(0), true);
 	
-	heightMap1->SetTexture(SOIL_load_OGL_texture("../../Textures/wall.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS),0);
-	heightMap1->SetTexture(SOIL_load_OGL_texture("../../Textures/snow2.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 1);
-	heightMap1->SetTexture(SOIL_load_OGL_texture("../../Textures/grass.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 2);
+	heightMap1->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"rock.PNG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS),0);
+	heightMap1->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"snow.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 1);
+	heightMap1->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"new_grass.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 2);
+	heightMap1->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"rock_norm.PNG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS),0);
+	heightMap1->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"snow_normal.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 1);
+	heightMap1->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"new_grass_norm.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 2);
+
 
 	heightMap2->SetTexture(SOIL_load_OGL_texture("../../Textures/wall.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
 
-
+	//Planet 1
 	if (!heightMap1->GetTexture(0) || !cubeMap || !quad->GetTexture(0)) {
 		return;
 	}
 	for (int i = 0; i < 3; i++) {
-		SetTextureRepeating(heightMap1->GetTexture(i), true); 	
+		SetTextureRepeating(heightMap1->GetTexture(i), true); 
+		SetTextureRepeating(heightMap1->GetBumpMap(i), true);
 	}
 	SetTextureRepeating(heightMap2->GetTexture(0), true);
 
@@ -128,10 +133,12 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	root1->AddChild(scene1);
 
 	Planet1Scene * planet1scene = new Planet1Scene();
-	planet1scene->SetTransform(Matrix4::Translation(Vector3(3500, 40.0f, 5000.0f))*Matrix4::Scale(Vector3(2.0f,1.2f,1.2f)));
+	planet1scene->SetTransform(Matrix4::Translation(Vector3(3500, 40.0f, 5000.0f))*Matrix4::Scale(Vector3(1.8f,1.0f,1.0f)));
 	planet1scene->getWallMesh()->SetTexture(SOIL_load_OGL_texture("../../Textures/house/wall.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
+	planet1scene->getWallMesh()->SetBumpMap(SOIL_load_OGL_texture("../../Textures/house/wall_norm.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
 	planet1scene->getPlantMesh()->SetTexture(SOIL_load_OGL_texture("../../Textures/grass.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
 	SetTextureRepeating(planet1scene->getWallMesh()->GetTexture(0), true);
+	SetTextureRepeating(planet1scene->getWallMesh()->GetBumpMap(0), true);
 	SetTextureRepeating(planet1scene->getPlantMesh()->GetTexture(0), true);
 	scene1->AddChild(planet1scene);
 	
@@ -153,13 +160,17 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	sphere->SetTexture(SOIL_load_OGL_texture("../../Textures/4096_earth.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 2);
 	sphere->SetTexture(SOIL_load_OGL_texture("../../Textures/moon.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 3);
 	sphere->SetTexture(SOIL_load_OGL_texture("../../Textures/4096_night_lights.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 4);
+	sphere->SetBumpMap(SOIL_load_OGL_texture("../../Textures/4096_normal.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 2);
 	for (int i = 0; i < 5; i++){
 		if (!sphere->GetTexture(i)) {
 			return;
 		}
+		SetTextureRepeating(sphere->GetTexture(i), true);
 	}
-	SetTextureRepeating(sphere->GetTexture(0), true); SetTextureRepeating(sphere->GetTexture(1), true); SetTextureRepeating(sphere->GetTexture(2), true);
-	SetTextureRepeating(sphere->GetTexture(3), true); SetTextureRepeating(sphere->GetTexture(4), true);
+	if (!sphere->GetBumpMap(2)) {
+		return;
+	}
+	SetTextureRepeating(sphere->GetBumpMap(2),true);
 	root3->AddChild(system);
 
 	glEnable(GL_DEPTH_TEST);
@@ -229,6 +240,12 @@ void Renderer::RenderScene() {
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex2"), 2);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex3"), 3);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex4"), 4);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex"), 5);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex1"), 6);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex2"), 7);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex3"), 8);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex4"), 9);
+
 
 	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float *)& camera->GetPosition());
 

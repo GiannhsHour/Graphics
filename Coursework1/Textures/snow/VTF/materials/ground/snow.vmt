@@ -1,0 +1,18 @@
+LightmappedGeneric
+{
+	// BASE SETTINGS
+	$basetexture	"ground\snow"
+	$bumpmap 	"ground\snow_normal"
+	$surfaceprop 	"snow"
+
+	//PHONG
+	$phong     1
+	$phongboost		  0.28
+	$phongfresnelranges      	"[1 4 6]"
+	$normalmapalphaphongmask    1
+
+	//ENVIRONMENT REFLECTION
+	$envmap "env_cubemap"
+	$envmaptint "[.0075 .0075 .0125]"
+	$normalmapalphaenvmapmask 1
+}

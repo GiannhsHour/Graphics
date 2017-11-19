@@ -14,6 +14,7 @@ Mesh::Mesh(void) {
 	// textures
 	for (int i = 0; i < 3; i++) {
 		texture[i] = 0;
+		bumpTexture[i] = 0;
 	}
 	
 	textureCoords = NULL;
@@ -27,7 +28,7 @@ Mesh::Mesh(void) {
 
 	// lighting B
 	tangents = NULL;
-	bumpTexture = 0;
+	
 
 }
 Mesh ::~Mesh(void) {
@@ -43,16 +44,14 @@ Mesh ::~Mesh(void) {
 	// textures
 	for (int i = 0; i < 3; i++) {
 		glDeleteTextures(1, &texture[i]);
+		glDeleteTextures(1, &bumpTexture[i]);
 	}
 	
 	delete[] textureCoords;
 
-	// lighting A
 	delete[] normals;
 
-	// lighting B
 	delete[] tangents;
-	glDeleteTextures(1, &bumpTexture); // Just like the texture map ...
 
 
 }
@@ -239,13 +238,10 @@ void Mesh::Draw() {
 
 // lighting B
 void Mesh::Draw(bool texture0) {
-	if (texture0){
+	if (texture0) {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture[0]);
 	}
-
-	glActiveTexture(GL_TEXTURE5); // New !!!
-	glBindTexture(GL_TEXTURE_2D, bumpTexture); // New !!!
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, texture[1]);
@@ -258,6 +254,21 @@ void Mesh::Draw(bool texture0) {
 
 	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_2D, texture[4]);
+
+	glActiveTexture(GL_TEXTURE5); 
+	glBindTexture(GL_TEXTURE_2D, bumpTexture[0]); 
+
+	glActiveTexture(GL_TEXTURE6);
+	glBindTexture(GL_TEXTURE_2D, bumpTexture[1]);
+
+	glActiveTexture(GL_TEXTURE7);
+	glBindTexture(GL_TEXTURE_2D, bumpTexture[2]);
+
+	glActiveTexture(GL_TEXTURE8);
+	glBindTexture(GL_TEXTURE_2D, bumpTexture[3]);
+
+	glActiveTexture(GL_TEXTURE9);
+	glBindTexture(GL_TEXTURE_2D, bumpTexture[4]);
 
 	glBindVertexArray(arrayObject);
 	if (bufferObject[INDEX_BUFFER]) {// Added by the index buffers tut ...
