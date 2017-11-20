@@ -5,6 +5,8 @@
 
 int main() {
 	Light * light;
+	int frames = 0;
+	float timePassed = 0;
 	Window w("Per Pixel Lighting!", 800, 600, false);
 	if (!w.HasInitialised()) {
 		return -1;
@@ -39,11 +41,14 @@ int main() {
 		}
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_K))
 			light->SetRadius(light->GetRadius() - 25.0f);
-		if (Window::GetKeyboard()->KeyDown(KEYBOARD_C)) {
-			/*Vector4 colour = light->GetColour();
-			light->SetColour(Vector4(colour.x*1.1f, colour.y*1.0f, colour.z*1.0f, colour.w*1.0f));*/
-			renderer.jump();
+
+		if (Window::GetKeyboard()->KeyDown(KEYBOARD_E)) {
+			if (renderer.getCanEnterPlanet()) {
+				renderer.setPlanetEnter(true);
+			}
 		}
+
+
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_R)) {
 			//cout << renderer.getLight()->GetPosition().x << " " << renderer.getLight()->GetPosition().y << " " << renderer.getLight()->GetPosition().z << endl;
 			cout << renderer.getCamera()->GetPosition().x << " " << renderer.getCamera()->GetPosition().y << " " << renderer.getCamera()->GetPosition().z << endl;
@@ -51,7 +56,16 @@ int main() {
 		//	renderer.getCamera()->SetPosition(Matrix4::Translation(Vector3(800.0f, 50.0f, 800.0f)) * Matrix4::Rotation(rotation, Vector3(0.0f, 1.0f, 0.0f))  * Matrix4::Translation(-Vector3(800.0f, 50.0f, 800.0f))  * renderer.getCamera()->GetPosition()) ;
 			//renderer.getCamera()->SetYaw(renderer.getCamera()->GetYaw() + 2.0f);
 		}
-		renderer.UpdateScene(w.GetTimer()->GetTimedMS());
+		frames += 1;
+		float sinceLastTime = w.GetTimer()->GetTimedMS();
+		timePassed += sinceLastTime;
+		if (timePassed > 1000) {
+			timePassed = 0;
+			renderer.setFps(frames);
+			frames = 0;
+		}
+		
+		renderer.UpdateScene(sinceLastTime);
 		renderer.RenderScene();
 	}
 

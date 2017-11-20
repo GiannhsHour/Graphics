@@ -6,6 +6,7 @@
 #include "../../nclgl/HeightMap.h"
 #include "PlanetSystem.h"
 #include "Planet1Scene.h"
+#include "TextMesh.h"
 #include <algorithm>
 #include <time.h> 
 
@@ -34,7 +35,16 @@ public:
 		}
 	}
 
-	void jump() { jump_bool = true; }
+	bool getPlanetEnter() { return planetEnter; }
+	void setPlanetEnter(bool flag) { planetEnter = flag; }
+
+	bool getCanEnterPlanet() { return canEnterPlanet; }
+	void setCanEnterPlanet(bool flag) { canEnterPlanet = flag; }
+
+	int getFps() { return fps; }
+	void setFps(int f) { fps = f; }
+
+	void	DrawText(const std::string &text, const Vector3 &position, const float size = 10.0f, const bool perspective = false);
 
 protected:
 	void DrawNode(SceneNode * n);
@@ -46,12 +56,17 @@ protected:
 	void DrawShadowScene();
 	void DrawSun();
 
-	void jump(float msec);
 	clock_t t;
 	SceneNode* root;
 	SceneNode * root1;
 	SceneNode * root2;
 	SceneNode * root3;
+
+	Planet1Scene * planet1Scene;
+	Planet1Scene * planet2Scene;
+	PlanetSystem * planetSystem;
+
+
 	Camera * camera;
 	Mesh* quad;
 	HeightMap* heightMap1;
@@ -61,6 +76,7 @@ protected:
 	Shader* planetShader;
 	Shader* skyboxShader;
 	Shader * shadowShader;
+	Shader * textShader;
 
 	GLuint shadowTex;
 	GLuint shadowFBO;
@@ -78,11 +94,10 @@ protected:
 	vector<SceneNode*> transparentNodeList;
 	vector<SceneNode*> nodeList;
 
+	Font*	basicFont;
 
-	bool jump_bool = false;
-	float timeIn = 0.0f;
-	float timeIn2 = 0.0f;
-	bool time_flag = true;
-	bool time_flag2 = true;
-	bool alt_bool = false;
+	bool planetEnter;
+	bool canEnterPlanet;
+
+	int fps;
 };

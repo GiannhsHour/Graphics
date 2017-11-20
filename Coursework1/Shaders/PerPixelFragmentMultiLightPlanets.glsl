@@ -42,7 +42,7 @@ void main ( void ) {
  mat3 TBN = mat3 ( IN . tangent , IN . binormal , IN . normal );
   vec3 normal = IN.normal;
 if(type == 0){
-		diffuse = texture ( diffuseTex , IN.texCoord*2 ) * 160 ;
+		diffuse = texture ( diffuseTex , IN.texCoord ) * 150 ;
 		normal = normalize ( TBN * ( texture ( bumpTex ,IN . texCoord ). rgb * 2.0 - 1.0));
 	}
 else if(type == 1){

@@ -19,6 +19,9 @@ public:
 	static void DeletePlanetSystem() { delete sphere; }
 	Mesh * getMesh(){return sphere;}
 
+	Vector3 getEarthPosition() { return planet3->GetWorldTransform().GetPositionVector(); }
+	Vector3 getRedPlanetPosition() { return planet1->GetWorldTransform().GetPositionVector(); }
+
 protected:
 	static Mesh * sphere;
 	static Mesh * spaceship;

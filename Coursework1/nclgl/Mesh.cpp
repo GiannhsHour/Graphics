@@ -236,12 +236,11 @@ void Mesh::Draw() {
 }
 */
 
-// lighting B
-void Mesh::Draw(bool texture0) {
-	if (texture0) {
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture[0]);
-	}
+void Mesh::Draw() {
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture[0]);
+	
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, texture[1]);

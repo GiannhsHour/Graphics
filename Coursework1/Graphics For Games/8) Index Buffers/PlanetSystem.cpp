@@ -14,7 +14,7 @@ PlanetSystem::PlanetSystem(void) {
 
 	planet1 = new SceneNode(sphere, Vector4(1, 0, 0, 1));
 	planet1->SetModelScale(Vector3(1200, 1100, 1200));
-	planet1->SetTransform(Matrix4::Translation(Vector3(10000, 0, 0)));
+	planet1->SetTransform(Matrix4::Translation(Vector3(11000, 0, 0)));
 	planet1->SetBoundingRadius(2200);
 	planet1->setType(1);
 	AddChild(planet1);
@@ -47,23 +47,23 @@ PlanetSystem::PlanetSystem(void) {
 
 void PlanetSystem::Update(float msec) {
 	//transform = transform * Matrix4::Rotation(-msec / 500.0f, Vector3(0, 1, 0));
-	sun->SetTransform(sun->GetTransform()*Matrix4::Rotation(msec / 400.0f, Vector3(0, 1, 0)));
+	sun->SetTransform(sun->GetTransform()*Matrix4::Rotation(0.02, Vector3(0, 1, 0)));
 
 	planet1->SetTransform(Matrix4::Translation(sun->GetWorldTransform().GetPositionVector())
-		*Matrix4::Rotation(0.1f, Vector3(0, 1, 0))
+		*Matrix4::Rotation(0.02f, Vector3(0, 1, 0))
 		*Matrix4::Translation(-(sun->GetWorldTransform().GetPositionVector()))
 		*planet1->GetTransform());
-	planet2->SetTransform(Matrix4::Translation(Vector3(600, 0, 0))
-		*Matrix4::Rotation(0.4f, Vector3(0, 1, 0))
-		*Matrix4::Translation(-(Vector3(600, 0, 0)))
+	planet2->SetTransform(Matrix4::Translation(Vector3(0, 0, 0))
+		*Matrix4::Rotation(0.08f, Vector3(0, 1, 0))
+		*Matrix4::Translation(-(Vector3(0, 0, 0)))
 		*planet2->GetTransform());
 	planet3->SetTransform(Matrix4::Translation(sun->GetWorldTransform().GetPositionVector())
-		*Matrix4::Rotation(0.2f, Vector3(0, 1, 0))
+		*Matrix4::Rotation(0.04f, Vector3(0, 1, 0))
 		*Matrix4::Translation(-(sun->GetWorldTransform().GetPositionVector()))
 		*planet3->GetTransform());
-	planet4->SetTransform(Matrix4::Translation(Vector3(400, 0, 0))
-		*Matrix4::Rotation(0.5f, Vector3(0, 1, 0))
-		*Matrix4::Translation(-(Vector3(400, 0, 0)))
+	planet4->SetTransform(Matrix4::Translation(Vector3(0, 0, 0))
+		*Matrix4::Rotation(0.09f, Vector3(0, 1, 0))
+		*Matrix4::Translation(-(Vector3(0, 0, 0)))
 		*planet4->GetTransform());
 	
 	SceneNode::Update(msec);

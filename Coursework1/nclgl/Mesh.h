@@ -38,7 +38,7 @@ public:
 	Mesh(void);
 	~Mesh(void);
 
-	virtual void Draw(bool texture0 = true);
+	virtual void Draw();
 	static Mesh * GenerateTriangle();
 
 	// textures

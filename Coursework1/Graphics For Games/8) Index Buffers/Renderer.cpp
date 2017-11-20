@@ -2,67 +2,23 @@
 
 
 
-void Renderer::jump(float time) {
-	if (jump_bool) {
-		if (time_flag2) {
-			//timeIn2 einai h xronikh stigmh pou ksekinaei to alma
-			//ypologizetai mia fora logw tou time_flag2
-			timeIn2 = time;
-			time_flag2 = false;
-		}
-		//taxuthta almatos
-		float jump_speed = 5.0f*0.0008f;
-		//ti tha prosthesei ston aksona "y"
-		float sine = sin((time - timeIn2)*jump_speed);
-
-		//an einai arnhtiko shmainei oti h camera ksana sikwnetai
-		//alla pio grhgora kai me mikroteri apostash
-		if (sine<0.0f) {
-			//jump_speed * 4.0f gia na sikwthei 4 fores pio grhgora kai olo dia 4 gia 4 fores mikroterh apostash
-			sine = -sin((time - timeIn2)*jump_speed*4.0f) / 4.0f;
-		}
-		else sine = abs(sine);
-
-		//to alma oloklirwnetai se:
-		// PI o xronos gia na sikwthei kai na katevei kai
-		// PI/4 o xronos ths epanaforas, sunolika 5PI/4
-		// kai olo auto dia to jump_speed gia na metatrepsoume se pragmatiko xrono
-		if (time - timeIn2 < (5.0f / 4.0f)*PI / jump_speed) {
-			float high = 0.6f*sine;
-			//float x = cameraTransform->GetTranslation().x;
-			float x = 0;
-			//float y = 1.6f + high;
-			float y = 1.6f + high;
-			//float z = cameraTransform->GetTranslation().z;
-			float z = 0;
-			camera->SetPosition(Matrix4::Translation(Vector3(x, y, z))*camera->GetPosition());
-			//cameraTransform->SetTranslation(x, y, z);
-		//	if (alt_bool&&time - timeIn2 < (PI / jump_speed)) camera_rotate -= speed*0.75;
-		}
-		else {
-			jump_bool = false;
-			time_flag2 = true;
-			alt_bool = false;
-			float x = 0;
-			float y = 1.6f;
-			float z = 0;
-			camera->SetPosition(Matrix4::Translation(Vector3(x, y, z))*camera->GetPosition());
-		}
-	}
-}
 
 Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	t = clock();
+	planetEnter = false;
+	canEnterPlanet = false;
 	PlanetSystem::CreatePlanetSystem(); 
 	Planet1Scene::CreatePlanet1Scene();
 	quad = Mesh::GenerateQuad();
 	camera = new Camera(0,180,Vector3(3000,400,4500));
 	heightMap1 = new HeightMap("../../Textures/terrain.raw");
 	heightMap2 = new HeightMap("../../Textures/terrain2.raw");
+	textShader = new Shader(SHADERDIR"TexturedVertex.glsl", SHADERDIR"TexturedFragment.glsl");
 	sceneShader = new Shader("../../Shaders/PerPixelVertex.glsl", "../../Shaders/PerPixelFragmentMultiLight.glsl");
 	planetShader = new Shader("../../Shaders/PerPixelVertex.glsl", "../../Shaders/PerPixelFragmentMultiLightPlanets.glsl");
 	skyboxShader = new Shader("../../Shaders/skyboxVertex.glsl", "../../Shaders/skyboxFragment.glsl");
 	shadowShader = new Shader("../../Shaders/shadowVert.glsl", "../../Shaders/shadowFrag.glsl");
+	basicFont = new Font(SOIL_load_OGL_texture(TEXTUREDIR"tahoma.tga",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_COMPRESS_TO_DXT),16,16);
 	currentShader = sceneShader;
 	projMatrix = Matrix4::Perspective(1.0f, 20000.0f, (float)width / (float)height, 45.0f);
 	 
@@ -79,7 +35,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	planet1Lights.push_back(earthlight);
 	lights = planetSystemLights;
 
-	if (!sceneShader->LinkProgram() || !planetShader->LinkProgram() || !skyboxShader->LinkProgram() || !shadowShader->LinkProgram()){
+	if (!sceneShader->LinkProgram() || !planetShader->LinkProgram() || !skyboxShader->LinkProgram() || !shadowShader->LinkProgram() ||!textShader->LinkProgram()){
 		return;
 	}
 
@@ -136,15 +92,15 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	scene1->setType(1);
 	root1->AddChild(scene1);
 
-	Planet1Scene * planet1scene = new Planet1Scene();
-	planet1scene->SetTransform(Matrix4::Translation(Vector3(3500, 40.0f, 5000.0f))*Matrix4::Rotation(-10,Vector3(0,1,0))*Matrix4::Scale(Vector3(1.0f, 0.6f, 0.6f)));
-	planet1scene->getWallMesh()->SetTexture(SOIL_load_OGL_texture("../../Textures/wall.PNG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
-	planet1scene->getWallMesh()->SetBumpMap(SOIL_load_OGL_texture("../../Textures/wall_normal.PNG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
-	planet1scene->getPlantMesh()->SetTexture(SOIL_load_OGL_texture("../../Textures/grass.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
-	SetTextureRepeating(planet1scene->getWallMesh()->GetTexture(0), true);
-	SetTextureRepeating(planet1scene->getWallMesh()->GetBumpMap(0), true);
-	SetTextureRepeating(planet1scene->getPlantMesh()->GetTexture(0), true);
-	scene1->AddChild(planet1scene);
+	planet1Scene = new Planet1Scene();
+	planet1Scene->SetTransform(Matrix4::Translation(Vector3(3500, 85.0f, 5000.0f))*Matrix4::Rotation(-10,Vector3(0,1,0))*Matrix4::Scale(Vector3(1.0f, 0.6f, 0.6f)));
+	planet1Scene->getWallMesh()->SetTexture(SOIL_load_OGL_texture("../../Textures/wall.PNG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
+	planet1Scene->getWallMesh()->SetBumpMap(SOIL_load_OGL_texture("../../Textures/wall_normal.PNG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
+	planet1Scene->getPlantMesh()->SetTexture(SOIL_load_OGL_texture("../../Textures/grass.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
+	SetTextureRepeating(planet1Scene->getWallMesh()->GetTexture(0), true);
+	SetTextureRepeating(planet1Scene->getWallMesh()->GetBumpMap(0), true);
+	SetTextureRepeating(planet1Scene->getPlantMesh()->GetTexture(0), true);
+	scene1->AddChild(planet1Scene);
 	
 
 	SceneNode* scene2 = new SceneNode();
@@ -157,9 +113,9 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	root2->AddChild(scene2);
 
 
-	PlanetSystem * system = new PlanetSystem();
-	Mesh* sphere = system->getMesh();
-	sphere->SetTexture(SOIL_load_OGL_texture("../../Textures/sun.PNG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
+	planetSystem = new PlanetSystem();
+	Mesh* sphere = planetSystem->getMesh();
+	sphere->SetTexture(SOIL_load_OGL_texture("../../Textures/sun.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
 	sphere->SetTexture(SOIL_load_OGL_texture("../../Textures/red_planet.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 1);
 	sphere->SetTexture(SOIL_load_OGL_texture("../../Textures/4096_earth.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 2);
 	sphere->SetTexture(SOIL_load_OGL_texture("../../Textures/moon.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 3);
@@ -177,7 +133,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 		return;
 	}
 	SetTextureRepeating(sphere->GetBumpMap(0),true); SetTextureRepeating(sphere->GetBumpMap(1), true); SetTextureRepeating(sphere->GetBumpMap(2), true);
-	root3->AddChild(system);
+	root3->AddChild(planetSystem);
 	//shadow
 	glGenTextures(1, &shadowTex);
 	glBindTexture(GL_TEXTURE_2D, shadowTex);
@@ -201,10 +157,10 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	glEnable(GL_DEPTH_TEST);
+	
 	glEnable(GL_BLEND);
 	//glEnable(GL_CULL_FACE);
 	//glCullFace(GL_BACK);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	init = true;
 }
@@ -233,7 +189,7 @@ void Renderer::DrawSkybox() {
 	 SetCurrentShader(skyboxShader);
 
 	 UpdateShaderMatrices();
-	 quad->Draw(false);
+	 quad->Draw();
 	
 	 glUseProgram(0);
 	 glDepthMask(GL_TRUE);
@@ -280,12 +236,43 @@ void Renderer::DrawSun() {
 
 }
 
-
 void Renderer::RenderScene() {
 	BuildNodeLists(root);
 	SortNodeLists();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);		// Clear Screen And Depth Buffer
 
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	SetCurrentShader(textShader);	//Enable the shader...
+												//And turn on texture unit 0
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
+	
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	//Render function to encapsulate our font rendering!
+	DrawText("FPS : " + to_string(fps), Vector3(0, 0, 0), 16.0f);
+	float distanceFromPlanetEarth = (camera->GetPosition() - planetSystem->getEarthPosition()).Length();
+	if (distanceFromPlanetEarth < 2000.0f && root == root3) {
+		DrawText("Enter Planet Earth (E)", Vector3(width/4, height / 4, 0), 20.0f);
+		canEnterPlanet = true;
+		if (planetEnter) {
+			root = root1;
+			camera->SetPosition(Vector3(3300, 2000, 2500));
+			planetEnter = false;
+			canEnterPlanet = false;
+		}
+	}
+	float distanceFromPlanetRed = (camera->GetPosition() - planetSystem->getRedPlanetPosition()).Length();
+	if (distanceFromPlanetRed < 3000.0f && root == root3) {
+		DrawText("Enter Red Planet (E)", Vector3(width /4, height / 4,  0), 20.0f);
+		canEnterPlanet = true;
+		if (planetEnter) {
+			root = root2;
+			camera->SetPosition(Vector3(3300, 2000, 2500));
+			planetEnter = false;
+			canEnterPlanet = false;
+		}
+	}
+
+	viewMatrix = camera->BuildViewMatrix();
+	projMatrix = Matrix4::Perspective(1.0f, 17000.0f, (float)width / (float)height, 45.0f);
 	
 	if (root == root1 || root == root2) {
 		glActiveTexture(GL_TEXTURE0);
@@ -303,7 +290,7 @@ void Renderer::RenderScene() {
 		DrawShadowScene();
 		SetCurrentShader(planetShader);
 	}
-	//glUseProgram(currentShader->GetProgram());
+	glUseProgram(currentShader->GetProgram());
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex1"), 1);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex2"), 2);
@@ -315,27 +302,30 @@ void Renderer::RenderScene() {
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex3"), 8);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex4"), 9);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "shadowTex"), 10);
-
+	
 	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float *)& camera->GetPosition());
-
-	//glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "shadowMatrixReal"), 1, false, shadowMatrix.values);
-	SetShaderLight(lights);
-
+	
+	//SetShaderLight(lights);
+	
 	glActiveTexture(GL_TEXTURE10);
 	glBindTexture(GL_TEXTURE_2D, shadowTex);
-
+	
 	viewMatrix = camera->BuildViewMatrix();
-
+	
 	UpdateShaderMatrices();
 	SetShaderLight(lights);
 
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	DrawNodes();
 	DrawSun();
-
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glUseProgram(0);
 	SwapBuffers();
 	ClearNodeLists();
 }
+
+
+
 
 void Renderer::ClearNodeLists() {
 	transparentNodeList.clear();
@@ -357,11 +347,7 @@ void Renderer::BuildNodeLists(SceneNode* from) {
 	if (frameFrustum.InsideFrustum(*from)) {
 		Vector3 dir = from->GetWorldTransform().GetPositionVector() - camera->GetPosition();
 		from->SetCameraDistance(Vector3::Dot(dir, dir));
-		/*
-		float alpha = 0;
-		glGetTexLevelParameterfv(GL_TEXTURE_2D, 0, GL_TEXTURE_ALPHA_SIZE, &alpha);
-		if (alpha > 0.0f) {
-		}*/
+
 		if (from->GetColour().w < 1.0f) {
 			transparentNodeList.push_back(from);
 		}
@@ -389,4 +375,30 @@ void Renderer::DrawNodes() {
 	for (vector<SceneNode*>::const_reverse_iterator i = transparentNodeList.rbegin(); i != transparentNodeList.rend(); ++i) {
 		DrawNode((*i));
 	}
+}
+
+void Renderer::DrawText(const std::string &text, const Vector3 &position, const float size, const bool perspective) {
+	//Create a new temporary TextMesh, using our line of text and our font
+	TextMesh* mesh = new TextMesh(text, *basicFont);
+
+	//This just does simple matrix setup to render in either perspective or
+	//orthographic mode, there's nothing here that's particularly tricky.
+	if (perspective) {
+		modelMatrix = Matrix4::Translation(position) * Matrix4::Scale(Vector3(size, size, 1));
+		viewMatrix = camera->BuildViewMatrix();
+		projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
+	}
+	else {
+		//In ortho mode, we subtract the y from the height, so that a height of 0
+		//is at the top left of the screen, which is more intuitive
+		//(for me anyway...)
+		modelMatrix = Matrix4::Translation(Vector3(position.x, height - position.y, position.z)) * Matrix4::Scale(Vector3(size, size, 1));
+		viewMatrix.ToIdentity();
+		projMatrix = Matrix4::Orthographic(-1.0f, 1.0f, (float)width, 0.0f, (float)height, 0.0f);
+	}
+	//Either way, we update the matrices, and draw the mesh
+	UpdateShaderMatrices();
+	mesh->Draw();
+
+	delete mesh; //Once it's drawn, we don't need it anymore!
 }

@@ -23,6 +23,7 @@ public:
 	static void DeletePlanetSystem() { delete wall; }
 	Mesh * getWallMesh() { return wall; }
 	Mesh * getPlantMesh() { return plant; }
+	
 
 protected:
 	static Mesh * wall;
