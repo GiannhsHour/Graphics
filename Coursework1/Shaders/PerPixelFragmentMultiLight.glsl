@@ -60,6 +60,7 @@ if(type == 1){
   
    diffuse.a = 1.0f;
   FragColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+   float shadow = 1.0; 
   for(int i =0; i< numLights; i++){
       vec4 tempColour;
 	  vec3 incident = normalize ( allLights[i].lightPos - IN.worldPos );
@@ -71,19 +72,27 @@ if(type == 1){
 
 	  float rFactor = max (0.0 , dot ( halfDir , normal )) * 0.2;
 	  float sFactor = pow ( rFactor , 5.0 );
-	  float shadow = 1.0; // New !
+	 
 
-	//  if( IN . shadowProj . w > 0.0) { // New !
-	//	shadow = textureProj ( shadowTex , IN . shadowProj );
-	//  }
+	 if( IN . shadowProj . w > 0.0) { 
+		shadow = textureProj ( shadowTex , IN . shadowProj );
+	  }
 
-	  lambert *= shadow ; // New !
+	  lambert *= shadow ; 
 	  vec3 colour = ( diffuse.rgb * allLights[i].lightColour.rgb );
 	  colour += ( allLights[i].lightColour.rgb * sFactor ) * 0.33;
 	  tempColour = vec4 ( colour * atten * lambert , diffuse.a );
 	  tempColour.rgb += ( diffuse.rgb * allLights[i].lightColour.rgb ) * allLights[i].ambient;
 	  FragColor += tempColour;
   }
+  
+  // vec2 tc_s = IN.shadowProj.xy / IN.shadowProj.w * 2.0f - 1.0f;
+  // if (abs(tc_s.x) <= 1.0f && abs(tc_s.y) <= 1.0f)
+  // {
+	  // tc_s = tc_s * 0.5f + 0.5f;
+	  // FragColor.xy = tc_s;
+	  // FragColor.z = shadow;
+  // }
 }
 
 

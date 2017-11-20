@@ -70,7 +70,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	m->LoadOBJMesh(MESHDIR"sphere_earth.obj");
 	earth_sun = m;
 
-	Light *sunLight = new Light(Vector3(0, 0, 0), Vector4(1, 1, 1, 1), 10000.0f);
+	Light *sunLight = new Light(Vector3(0, 0, 0), Vector4(1, 1, 1, 1), 15000.0f);
 	sunLight->SetAmbient(0.01f);
 	planetSystemLights.push_back(sunLight);
 
@@ -244,7 +244,7 @@ void Renderer::DrawShadowScene() {
 
 	glClear(GL_DEPTH_BUFFER_BIT);
 
-	glViewport(0, 0, SHADOWSIZE, SHADOWSIZE);
+	glViewport(1, 1, SHADOWSIZE - 2, SHADOWSIZE - 2);
 
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
@@ -317,6 +317,8 @@ void Renderer::RenderScene() {
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "shadowTex"), 10);
 
 	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float *)& camera->GetPosition());
+
+	//glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "shadowMatrixReal"), 1, false, shadowMatrix.values);
 	SetShaderLight(lights);
 
 	glActiveTexture(GL_TEXTURE10);

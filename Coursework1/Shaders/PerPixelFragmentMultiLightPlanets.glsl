@@ -72,13 +72,13 @@ else if(type == 3){
 
 	  float rFactor = max (0.0 , dot ( halfDir , normal ));
 	  float sFactor = pow ( rFactor , 2.0 );
-	  float shadow = 1.0; // New !
+	  float shadow = 1.0; 
 
-	  if( IN . shadowProj . w > 0.0) { // New !
+	  if( IN . shadowProj . w > 0.0) { 
 		 shadow = textureProj ( shadowTex , IN . shadowProj );
 	  }
 
-	  lambert *= shadow ; // New !
+	  lambert *= shadow ; 
 	  vec3 colour = ( diffuse.rgb * allLights[i].lightColour.rgb );
 	  colour += ( allLights[i].lightColour.rgb * sFactor ) * 0.33;
 	  tempColour = vec4 ( colour * atten * lambert , diffuse.a );
