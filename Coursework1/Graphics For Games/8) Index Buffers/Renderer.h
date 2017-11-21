@@ -37,12 +37,17 @@ public:
 	}
 
 	bool getPlanetEnter() { return planetEnter; }
-	void setPlanetEnter(bool flag) { planetEnter = flag; }
+	void setPlanetEnter(bool flag) { 
+		if(canEnterPlanet) planetEnter = flag; 
+		}
 
 	bool getCanEnterPlanet() { return canEnterPlanet; }
 	void setCanEnterPlanet(bool flag) { canEnterPlanet = flag; }
 
+	void setGoToSpace(bool flag) { goToSpace = flag; }
 	void setSinceLastTime(float s) { sinceLastTime = s; }
+
+	void teleport();
 
 	void	DrawText(const std::string &text, const Vector3 &position, const float size = 10.0f, const bool perspective = false);
 
@@ -55,7 +60,7 @@ protected:
 	void DrawSkybox();
 	void DrawShadowScene();
 	void DrawSun();
-	void	SetShaderParticleSize(float f);	
+	void SetShaderParticleSize(float f);	
 
 	ParticleEmitter*	emitter;	
 
@@ -81,6 +86,7 @@ protected:
 	Shader * shadowShader;
 	Shader * textShader;
 	Shader * particleShader;
+	Shader * fadeOutShader;
 
 	GLuint shadowTex;
 	GLuint shadowFBO;
@@ -102,6 +108,14 @@ protected:
 
 	bool planetEnter;
 	bool canEnterPlanet;
+	bool goToSpace;
 
 	float sinceLastTime;
+	bool fadeOut;
+	bool fadeIn;
+	bool transition;
+	
+	float fadeOutAlpha;
+	int visitPlanet;
+
 };

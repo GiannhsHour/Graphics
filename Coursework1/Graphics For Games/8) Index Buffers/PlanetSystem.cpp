@@ -52,15 +52,20 @@ void PlanetSystem::Update(float msec) {
 	planet1->SetTransform(Matrix4::Translation(sun->GetWorldTransform().GetPositionVector())
 		*Matrix4::Rotation(0.02f, Vector3(0, 1, 0))
 		*Matrix4::Translation(-(sun->GetWorldTransform().GetPositionVector()))
-		*planet1->GetTransform());
+		*planet1->GetTransform()
+		*Matrix4::Rotation(0.04f, Vector3(0, 1, 0)));
 	planet2->SetTransform(Matrix4::Rotation(0.08f, Vector3(0, 1, 0))
-		*planet2->GetTransform());
+		*planet2->GetTransform()
+		*Matrix4::Rotation(0.07f, Vector3(0, 1, 0)));
 	planet3->SetTransform(Matrix4::Translation(sun->GetWorldTransform().GetPositionVector())
-		*Matrix4::Rotation(0.04f, Vector3(0, 1, 0))
+		*Matrix4::Rotation(0.02f, Vector3(0, 1, 0))
 		*Matrix4::Translation(-(sun->GetWorldTransform().GetPositionVector()))
-		*planet3->GetTransform());
+		*planet3->GetTransform()
+		*Matrix4::Rotation(0.05f, Vector3(0, 1, 0)));
+	    
 	planet4->SetTransform(Matrix4::Rotation(0.09f, Vector3(0, 1, 0))
-		*planet4->GetTransform());
+		*planet4->GetTransform()
+		*Matrix4::Rotation(0.07f, Vector3(0, 1, 0)));
 	
 	SceneNode::Update(msec);
 }

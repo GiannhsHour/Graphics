@@ -48,6 +48,10 @@ int main() {
 			}
 		}
 
+		if (Window::GetKeyboard()->KeyDown(KEYBOARD_Q)) {
+			renderer.setGoToSpace(true);
+		}
+
 
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_R)) {
 			//cout << renderer.getLight()->GetPosition().x << " " << renderer.getLight()->GetPosition().y << " " << renderer.getLight()->GetPosition().z << endl;

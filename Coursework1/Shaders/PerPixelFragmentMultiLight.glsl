@@ -36,7 +36,7 @@ void main ( void ) {
  vec4 diffuse;
   vec3 normal = IN.normal;
   mat3 TBN = mat3 ( IN . tangent , IN . binormal , IN . normal );
-  
+  float total_ambient = 0;
   //if it is terrain
 if(type == 1){
 	if(IN.worldPos.y>500){
@@ -84,17 +84,19 @@ if(type == 1){
 	  
 	  tempColour = vec4 ( colour * atten * lambert , diffuse.a );
 	  tempColour.rgb += ( diffuse.rgb * allLights[i].lightColour.rgb ) * allLights[i].ambient;
+	  total_ambient+=allLights[i].ambient;
 	  FragColor += tempColour;
   }
   //fog
   float cameraDist = length(cameraPos - IN.worldPos)/500;
   vec3 fogColor = vec3(0.5, 0.5,0.5);
-  float FogDensity = 0.15;
+  float FogDensity = 0.10;
   float fogFactor = 0;
   fogFactor = 1.0 /exp(cameraDist * FogDensity);
   fogFactor = clamp( fogFactor, 0.0, 1.0 );
   //interpolate based on fogFactor ( which is based on distance )
-  FragColor.rgb = fogColor*(1-fogFactor) + FragColor.rgb * fogFactor;
+  FragColor.rgb = fogColor*(1-fogFactor)*total_ambient*55 + FragColor.rgb * fogFactor;
+  //FragColor.rgb = fogColor*(1-fogFactor)*FragColor.rgb*25 + FragColor.rgb * fogFactor;
   
 }
 

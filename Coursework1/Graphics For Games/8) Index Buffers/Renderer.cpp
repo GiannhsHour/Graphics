@@ -7,14 +7,19 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	t = clock();
 	planetEnter = false;
 	canEnterPlanet = false;
+    transition = false;
+	fadeOut = false;
+	fadeIn = false;
+	goToSpace = false;
+	fadeOutAlpha = 0.0f;
 	PlanetSystem::CreatePlanetSystem(); 
 	Planet1Scene::CreatePlanet1Scene();
 	quad = Mesh::GenerateQuad();
-//	camera = new Camera(0,180,Vector3(3000,400,4500));
-	camera = new Camera(0, 0, Vector3(0, 0, 250.0f));
+	camera = new Camera(0,180,Vector3(3000,400,4500));
 	heightMap1 = new HeightMap("../../Textures/terrain.raw");
 	heightMap2 = new HeightMap("../../Textures/terrain2.raw");
 	textShader = new Shader(SHADERDIR"TexturedVertex.glsl", SHADERDIR"TexturedFragment.glsl");
+	fadeOutShader = new Shader(SHADERDIR"TexturedVertex.glsl", SHADERDIR"FadeOutFragment.glsl");
 	sceneShader = new Shader("../../Shaders/PerPixelVertex.glsl", "../../Shaders/PerPixelFragmentMultiLight.glsl");
 	planetShader = new Shader("../../Shaders/PerPixelVertex.glsl", "../../Shaders/PerPixelFragmentMultiLightPlanets.glsl");
 	skyboxShader = new Shader("../../Shaders/skyboxVertex.glsl", "../../Shaders/skyboxFragment.glsl");
@@ -24,7 +29,9 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	currentShader = sceneShader;
 	projMatrix = Matrix4::Perspective(1.0f, 20000.0f, (float)width / (float)height, 45.0f);
 	 
-	
+	//draw cubamps and fade out (in) screens
+	quad->SetTexture(SOIL_load_OGL_texture("../../Textures/black.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, 0), 0);
+
 
 	OBJMesh * m = new OBJMesh();
 	m->LoadOBJMesh(MESHDIR"sphere_earth.obj");
@@ -39,7 +46,8 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	planet1Lights.push_back(earthlight);
 	lights = planetSystemLights;
 
-	if (!sceneShader->LinkProgram() || !planetShader->LinkProgram() || !skyboxShader->LinkProgram() || !shadowShader->LinkProgram() ||!textShader->LinkProgram() || !particleShader->LinkProgram()){
+	if (!sceneShader->LinkProgram() || !planetShader->LinkProgram() || !skyboxShader->LinkProgram() || !shadowShader->LinkProgram() 
+		||!textShader->LinkProgram() || !particleShader->LinkProgram() || !fadeOutShader->LinkProgram()){
 		return;
 	}
 
@@ -110,6 +118,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	SceneNode * rain = new SceneNode();
 	rain->SetTransform(Matrix4::Translation(Vector3(0, 500, 0)));
 	rain->SetMesh(emitter);
+	rain->SetBoundingRadius(500.0f);
 	scene1->AddChild(rain);
 	
 
@@ -169,8 +178,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	glEnable(GL_DEPTH_TEST);
 	
 	glEnable(GL_BLEND);
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_BACK);
+	
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	init = true;
 }
@@ -231,7 +239,7 @@ void Renderer::DrawShadowScene() {
 	glUseProgram(0);
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	glViewport(0, 0, width, height);
-
+	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 }
@@ -252,37 +260,45 @@ void Renderer::RenderScene() {
 	BuildNodeLists(root);
 	SortNodeLists();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);		// Clear Screen And Depth Buffer
-
+	glDisable(GL_CULL_FACE);
 	SetCurrentShader(textShader);	
 												
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	//Render function to encapsulate our font rendering!
+
 	string fps = to_string(1000 / sinceLastTime);
 	fps = fps.substr(0,4);
 	DrawText("FPS : " + fps, Vector3(0, 0, 0), 16.0f);
+	if(root== root1 || root == root2) DrawText("Go to Space (Q)", Vector3(width/3, 0, 0), 20.0f);
 	float distanceFromPlanetEarth = (camera->GetPosition() - planetSystem->getEarthPosition()).Length();
+	float distanceFromPlanetRed = (camera->GetPosition() - planetSystem->getRedPlanetPosition()).Length();
 	if (distanceFromPlanetEarth < 2000.0f && root == root3) {
 		DrawText("Enter Planet Earth (E)", Vector3(width/4, height / 4, 0), 20.0f);
 		canEnterPlanet = true;
 		if (planetEnter) {
-			root = root1;
-			camera->SetPosition(Vector3(3300, 2000, 2500));
-			planetEnter = false;
-			canEnterPlanet = false;
+			transition = true;
+			fadeOut = true;
+			visitPlanet = 1;
 		}
 	}
-	float distanceFromPlanetRed = (camera->GetPosition() - planetSystem->getRedPlanetPosition()).Length();
-	if (distanceFromPlanetRed < 3000.0f && root == root3) {
+	else if (distanceFromPlanetRed < 3000.0f && root == root3) {
 		DrawText("Enter Red Planet (E)", Vector3(width /4, height / 4,  0), 20.0f);
 		canEnterPlanet = true;
 		if (planetEnter) {
-			root = root2;
-			camera->SetPosition(Vector3(3300, 2000, 2500));
-			planetEnter = false;
-			canEnterPlanet = false;
+			transition = true;
+			fadeOut = true;
+			visitPlanet = 2;
 		}
+	}
+	else canEnterPlanet = false;
+	if (goToSpace) {
+		if(!transition) {
+			transition = true;
+			fadeOut = true;
+		}
+		goToSpace = false;
+		visitPlanet = 3;
 	}
 
 	viewMatrix = camera->BuildViewMatrix();
@@ -329,6 +345,8 @@ void Renderer::RenderScene() {
 	SetShaderLight(lights);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 	DrawNodes();
 	DrawSun();
 
@@ -336,21 +354,24 @@ void Renderer::RenderScene() {
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 	if (root == root1) {
 		emitter->SetParticleSize(8.0f);
-		emitter->SetParticleVariance(0.05f);
-		emitter->SetParticleLifetime(4000.0f);
+		emitter->SetParticleVariance(0.10f);
+		emitter->SetParticleLifetime(2500.0f);
 		emitter->SetLaunchParticles(1.0f);
 		emitter->SetParticleSpeed(1.8f);
 		SetShaderParticleSize(emitter->GetParticleSize());
-		for (int i = 0; i < 40; i++) {
-			for (int j = 0; j < 40; j++) {
+		for (int i = 0; i < 20; i++) {
+			for (int j = 0; j < 20; j++) {
 				emitter->SetDirection(Vector3(0, -1, 0));
-				modelMatrix = Matrix4::Translation(Vector3(200*i +rand()%200, rand() % 500 + 3500, 200 * j + rand() % 200));
+				int ran = rand();
+				modelMatrix = Matrix4::Translation(Vector3(350*i +ran%350, ran % 500 + 2500, 350 * j + ran % 350));
 				UpdateShaderMatrices();
 				emitter->Draw();
 			}
 		}
 	}
-
+	
+	teleport();
+	
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glUseProgram(0);
 	SwapBuffers();
@@ -360,7 +381,38 @@ void	Renderer::SetShaderParticleSize(float f) {
 	glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "particleSize"), f);
 }
 
-
+void Renderer::teleport() {
+	if (transition) {
+		if (fadeOut) {
+			fadeOutAlpha += 0.008;
+			if (fadeOutAlpha >= 1.0) {
+				if (visitPlanet == 1) root = root1;
+				else if (visitPlanet == 2) root = root2;
+				else root = root3;
+				camera->SetPosition(Vector3(3500, 500, 4000));
+				fadeIn = true;
+				fadeOut = false;
+			}
+		}
+		else if (fadeIn) {
+			fadeOutAlpha -= 0.008;
+			if (fadeOutAlpha <= 0.0) {
+				fadeIn = false;
+				transition = false;
+				planetEnter = false;
+				canEnterPlanet = false;
+			}
+		}
+		SetCurrentShader(fadeOutShader);
+		modelMatrix.ToIdentity();
+		projMatrix = Matrix4::Orthographic(-1, 1, 1, -1, -1, 1);
+		viewMatrix.ToIdentity();
+		glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "alpha"), fadeOutAlpha);
+		UpdateShaderMatrices();
+		quad->Draw();
+		projMatrix = Matrix4::Perspective(1.0f, 17000.0f, (float)width / (float)height, 45.0f);
+	}
+}
 
 
 void Renderer::ClearNodeLists() {
@@ -412,6 +464,7 @@ void Renderer::DrawNodes() {
 		DrawNode((*i));
 	}
 }
+
 
 void Renderer::DrawText(const std::string &text, const Vector3 &position, const float size, const bool perspective) {
 	//Create a new temporary TextMesh, using our line of text and our font
