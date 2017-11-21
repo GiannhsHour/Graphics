@@ -71,6 +71,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ParticleEmitter.cpp" />
     <ClCompile Include="Planet1Scene.cpp" />
     <ClCompile Include="PlanetSystem.cpp" />
     <ClCompile Include="Renderer.cpp" />
@@ -78,6 +79,7 @@
     <ClCompile Include="tutorial8.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ParticleEmitter.h" />
     <ClInclude Include="Planet1Scene.h" />
     <ClInclude Include="PlanetSystem.h" />
     <ClInclude Include="Renderer.h" />

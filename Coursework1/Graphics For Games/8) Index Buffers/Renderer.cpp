@@ -10,7 +10,8 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	PlanetSystem::CreatePlanetSystem(); 
 	Planet1Scene::CreatePlanet1Scene();
 	quad = Mesh::GenerateQuad();
-	camera = new Camera(0,180,Vector3(3000,400,4500));
+//	camera = new Camera(0,180,Vector3(3000,400,4500));
+	camera = new Camera(0, 0, Vector3(0, 0, 250.0f));
 	heightMap1 = new HeightMap("../../Textures/terrain.raw");
 	heightMap2 = new HeightMap("../../Textures/terrain2.raw");
 	textShader = new Shader(SHADERDIR"TexturedVertex.glsl", SHADERDIR"TexturedFragment.glsl");
@@ -18,10 +19,13 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	planetShader = new Shader("../../Shaders/PerPixelVertex.glsl", "../../Shaders/PerPixelFragmentMultiLightPlanets.glsl");
 	skyboxShader = new Shader("../../Shaders/skyboxVertex.glsl", "../../Shaders/skyboxFragment.glsl");
 	shadowShader = new Shader("../../Shaders/shadowVert.glsl", "../../Shaders/shadowFrag.glsl");
+	particleShader = new Shader(SHADERDIR"particleVertex.glsl",SHADERDIR"particleFragment.glsl",SHADERDIR"particleGeometry.glsl");
 	basicFont = new Font(SOIL_load_OGL_texture(TEXTUREDIR"tahoma.tga",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_COMPRESS_TO_DXT),16,16);
 	currentShader = sceneShader;
 	projMatrix = Matrix4::Perspective(1.0f, 20000.0f, (float)width / (float)height, 45.0f);
 	 
+	
+
 	OBJMesh * m = new OBJMesh();
 	m->LoadOBJMesh(MESHDIR"sphere_earth.obj");
 	earth_sun = m;
@@ -35,7 +39,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	planet1Lights.push_back(earthlight);
 	lights = planetSystemLights;
 
-	if (!sceneShader->LinkProgram() || !planetShader->LinkProgram() || !skyboxShader->LinkProgram() || !shadowShader->LinkProgram() ||!textShader->LinkProgram()){
+	if (!sceneShader->LinkProgram() || !planetShader->LinkProgram() || !skyboxShader->LinkProgram() || !shadowShader->LinkProgram() ||!textShader->LinkProgram() || !particleShader->LinkProgram()){
 		return;
 	}
 
@@ -101,6 +105,12 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	SetTextureRepeating(planet1Scene->getWallMesh()->GetBumpMap(0), true);
 	SetTextureRepeating(planet1Scene->getPlantMesh()->GetTexture(0), true);
 	scene1->AddChild(planet1Scene);
+
+	emitter = new ParticleEmitter();
+	SceneNode * rain = new SceneNode();
+	rain->SetTransform(Matrix4::Translation(Vector3(0, 500, 0)));
+	rain->SetMesh(emitter);
+	scene1->AddChild(rain);
 	
 
 	SceneNode* scene2 = new SceneNode();
@@ -168,15 +178,18 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 Renderer ::~Renderer(void) {
 	delete root1;
 	delete root2;
+	delete root3;
+	delete root;
 	PlanetSystem::DeletePlanetSystem();
 	delete heightMap1;
 	delete heightMap2;
-	delete skyboxShader;
+	delete emitter;
 	currentShader = 0;
 }
 
 void Renderer::UpdateScene(float msec) {
 	
+	emitter->Update(msec);
 	camera -> UpdateCamera(msec);
 	viewMatrix = camera -> BuildViewMatrix();
 	frameFrustum.FromMatrix(projMatrix*viewMatrix);
@@ -306,7 +319,6 @@ void Renderer::RenderScene() {
 	
 	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float *)& camera->GetPosition());
 	
-	//SetShaderLight(lights);
 	
 	glActiveTexture(GL_TEXTURE10);
 	glBindTexture(GL_TEXTURE_2D, shadowTex);
@@ -319,10 +331,33 @@ void Renderer::RenderScene() {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	DrawNodes();
 	DrawSun();
+
+	SetCurrentShader(particleShader);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
+	if (root == root1) {
+		emitter->SetParticleSize(8.0f);
+		emitter->SetParticleVariance(0.05f);
+		emitter->SetParticleLifetime(4000.0f);
+		emitter->SetLaunchParticles(1.0f);
+		emitter->SetParticleSpeed(1.8f);
+		SetShaderParticleSize(emitter->GetParticleSize());
+		for (int i = 0; i < 40; i++) {
+			for (int j = 0; j < 40; j++) {
+				emitter->SetDirection(Vector3(0, -1, 0));
+				modelMatrix = Matrix4::Translation(Vector3(200*i +rand()%200, rand() % 500 + 3500, 200 * j + rand() % 200));
+				UpdateShaderMatrices();
+				emitter->Draw();
+			}
+		}
+	}
+
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glUseProgram(0);
 	SwapBuffers();
 	ClearNodeLists();
+}
+void	Renderer::SetShaderParticleSize(float f) {
+	glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "particleSize"), f);
 }
 
 

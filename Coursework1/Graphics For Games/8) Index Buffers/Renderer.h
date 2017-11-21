@@ -7,6 +7,7 @@
 #include "PlanetSystem.h"
 #include "Planet1Scene.h"
 #include "TextMesh.h"
+#include "ParticleEmitter.h"
 #include <algorithm>
 #include <time.h> 
 
@@ -54,6 +55,9 @@ protected:
 	void DrawSkybox();
 	void DrawShadowScene();
 	void DrawSun();
+	void	SetShaderParticleSize(float f);	
+
+	ParticleEmitter*	emitter;	
 
 	clock_t t;
 	SceneNode* root;
@@ -76,6 +80,7 @@ protected:
 	Shader* skyboxShader;
 	Shader * shadowShader;
 	Shader * textShader;
+	Shader * particleShader;
 
 	GLuint shadowTex;
 	GLuint shadowFBO;

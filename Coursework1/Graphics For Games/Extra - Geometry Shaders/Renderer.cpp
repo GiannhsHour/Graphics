@@ -5,9 +5,9 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)	{
 	//I made you all type out! We're going to use it to add in an
 	//extra stage between some simple shaders,
 	//which turns GL_POINTS into GL_TRIANGLE_STRIPS
-	currentShader = new Shader(	"vertex.glsl",
-								"fragment.glsl", 
-								"geometry.glsl");
+	currentShader = new Shader(	SHADERDIR"particleVertex.glsl",
+								SHADERDIR"particleFragment.glsl",
+								SHADERDIR"particleGeometry.glsl");
 
 	if(!currentShader->LinkProgram()) {
 		return;
