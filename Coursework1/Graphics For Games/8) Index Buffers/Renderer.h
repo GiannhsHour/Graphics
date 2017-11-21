@@ -41,8 +41,7 @@ public:
 	bool getCanEnterPlanet() { return canEnterPlanet; }
 	void setCanEnterPlanet(bool flag) { canEnterPlanet = flag; }
 
-	int getFps() { return fps; }
-	void setFps(int f) { fps = f; }
+	void setSinceLastTime(float s) { sinceLastTime = s; }
 
 	void	DrawText(const std::string &text, const Vector3 &position, const float size = 10.0f, const bool perspective = false);
 
@@ -99,5 +98,5 @@ protected:
 	bool planetEnter;
 	bool canEnterPlanet;
 
-	int fps;
+	float sinceLastTime;
 };

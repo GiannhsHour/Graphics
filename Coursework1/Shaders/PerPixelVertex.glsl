@@ -33,6 +33,6 @@ void main(void) {
 	OUT.binormal = normalize(normalMatrix * normalize(cross(normal , tangent)));
 
 	OUT.worldPos = (modelMatrix * vec4 (position ,1)).xyz;
-	OUT.shadowProj = ( shadowMatrix * modelMatrix * vec4 ( position +( normal * 10.5) ,1));
+	OUT.shadowProj = ( shadowMatrix * modelMatrix * vec4 ( position +( normal * 10.5) ,1)); //10.5 relative to map size
 	gl_Position = (projMatrix * viewMatrix * modelMatrix) * vec4 (position , 1.0);
 }

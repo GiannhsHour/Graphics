@@ -179,7 +179,6 @@ void Renderer::UpdateScene(float msec) {
 	
 	camera -> UpdateCamera(msec);
 	viewMatrix = camera -> BuildViewMatrix();
-	//jump((float)(clock() - t));
 	frameFrustum.FromMatrix(projMatrix*viewMatrix);
 	root -> Update(msec);
 }
@@ -241,13 +240,15 @@ void Renderer::RenderScene() {
 	SortNodeLists();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);		// Clear Screen And Depth Buffer
 
-	SetCurrentShader(textShader);	//Enable the shader...
-												//And turn on texture unit 0
+	SetCurrentShader(textShader);	
+												
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	//Render function to encapsulate our font rendering!
-	DrawText("FPS : " + to_string(fps), Vector3(0, 0, 0), 16.0f);
+	string fps = to_string(1000 / sinceLastTime);
+	fps = fps.substr(0,4);
+	DrawText("FPS : " + fps, Vector3(0, 0, 0), 16.0f);
 	float distanceFromPlanetEarth = (camera->GetPosition() - planetSystem->getEarthPosition()).Length();
 	if (distanceFromPlanetEarth < 2000.0f && root == root3) {
 		DrawText("Enter Planet Earth (E)", Vector3(width/4, height / 4, 0), 20.0f);

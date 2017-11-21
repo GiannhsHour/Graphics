@@ -5,8 +5,7 @@
 
 int main() {
 	Light * light;
-	int frames = 0;
-	float timePassed = 0;
+	
 	Window w("Per Pixel Lighting!", 800, 600, false);
 	if (!w.HasInitialised()) {
 		return -1;
@@ -56,15 +55,9 @@ int main() {
 		//	renderer.getCamera()->SetPosition(Matrix4::Translation(Vector3(800.0f, 50.0f, 800.0f)) * Matrix4::Rotation(rotation, Vector3(0.0f, 1.0f, 0.0f))  * Matrix4::Translation(-Vector3(800.0f, 50.0f, 800.0f))  * renderer.getCamera()->GetPosition()) ;
 			//renderer.getCamera()->SetYaw(renderer.getCamera()->GetYaw() + 2.0f);
 		}
-		frames += 1;
+
 		float sinceLastTime = w.GetTimer()->GetTimedMS();
-		timePassed += sinceLastTime;
-		if (timePassed > 1000) {
-			timePassed = 0;
-			renderer.setFps(frames);
-			frames = 0;
-		}
-		
+		renderer.setSinceLastTime(sinceLastTime);
 		renderer.UpdateScene(sinceLastTime);
 		renderer.RenderScene();
 	}
