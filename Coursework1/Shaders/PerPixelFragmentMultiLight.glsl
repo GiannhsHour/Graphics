@@ -57,7 +57,7 @@ if(type == 1){
   else {diffuse  = texture ( diffuseTex , IN.texCoord );
 		normal = normalize ( TBN * ( texture ( bumpTex ,IN . texCoord ). rgb * 2.0 - 1.0));
   }
-  
+
    diffuse.a = 1.0f;
   FragColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);
    float shadow = 1.0; 
@@ -81,18 +81,21 @@ if(type == 1){
 	  lambert *= shadow ; 
 	  vec3 colour = ( diffuse.rgb * allLights[i].lightColour.rgb );
 	  colour += ( allLights[i].lightColour.rgb * sFactor ) * 0.33;
+	  
 	  tempColour = vec4 ( colour * atten * lambert , diffuse.a );
 	  tempColour.rgb += ( diffuse.rgb * allLights[i].lightColour.rgb ) * allLights[i].ambient;
 	  FragColor += tempColour;
   }
+  //fog
+  float cameraDist = length(cameraPos - IN.worldPos)/500;
+  vec3 fogColor = vec3(0.5, 0.5,0.5);
+  float FogDensity = 0.15;
+  float fogFactor = 0;
+  fogFactor = 1.0 /exp(cameraDist * FogDensity);
+  fogFactor = clamp( fogFactor, 0.0, 1.0 );
+  //interpolate based on fogFactor ( which is based on distance )
+  FragColor.rgb = fogColor*(1-fogFactor) + FragColor.rgb * fogFactor;
   
-  // vec2 tc_s = IN.shadowProj.xy / IN.shadowProj.w * 2.0f - 1.0f;
-  // if (abs(tc_s.x) <= 1.0f && abs(tc_s.y) <= 1.0f)
-  // {
-	  // tc_s = tc_s * 0.5f + 0.5f;
-	  // FragColor.xy = tc_s;
-	  // FragColor.z = shadow;
-  // }
 }
 
 
