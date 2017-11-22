@@ -7,6 +7,7 @@ uniform sampler2D bumpTex ;
 uniform sampler2D bumpTex1 ;
 uniform sampler2D bumpTex2 ;
 uniform sampler2DShadow shadowTex ;
+uniform int fog;
 
 #define MAX_LIGHTS 10
 uniform int numLights;
@@ -88,15 +89,17 @@ if(type == 1){
 	  FragColor += tempColour;
   }
   //fog
-  float cameraDist = length(cameraPos - IN.worldPos)/500;
-  vec3 fogColor = vec3(0.5, 0.5,0.5);
-  float FogDensity = 0.10;
-  float fogFactor = 0;
-  fogFactor = 1.0 /exp(cameraDist * FogDensity);
-  fogFactor = clamp( fogFactor, 0.0, 1.0 );
-  //interpolate based on fogFactor ( which is based on distance )
-  FragColor.rgb = fogColor*(1-fogFactor)*total_ambient*55 + FragColor.rgb * fogFactor;
-  //FragColor.rgb = fogColor*(1-fogFactor)*FragColor.rgb*25 + FragColor.rgb * fogFactor;
+  if(fog > 0){
+	  float cameraDist = length(cameraPos - IN.worldPos)/400;
+	  vec3 fogColor = vec3(0.5, 0.5,0.5);
+	  float FogDensity = 0.07;
+	  float fogFactor = 0;
+	  fogFactor = 1.0 /exp(cameraDist * FogDensity);
+	  fogFactor = clamp( fogFactor, 0.0, 1.0 );
+	  //interpolate based on fogFactor ( which is based on distance )
+	  FragColor.rgb = fogColor*(1-fogFactor)*total_ambient*55 + FragColor.rgb * fogFactor;
+  }
+ 
   
 }
 

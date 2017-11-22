@@ -49,6 +49,11 @@ public:
 	void setGoToSpace(bool flag) { goToSpace = flag; }
 	void setSinceLastTime(float s) { sinceLastTime = s; }
 
+	void toggleRain() { rain = !rain; }
+	void toggleFog() { 
+		if (fog) fog = 0;
+		else fog = 1;
+	}
 	void teleport();
 
 	void	DrawText(const std::string &text, const Vector3 &position, const float size = 10.0f, const bool perspective = false);
@@ -126,5 +131,8 @@ protected:
 
 	int currentWidth;
 	int currentHeight;
+
+	bool rain;
+	int fog;
 
 };

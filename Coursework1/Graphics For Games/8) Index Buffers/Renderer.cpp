@@ -5,6 +5,8 @@
 
 Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	t = clock();
+	rain = true;
+	fog = 1;
 	planetEnter = false;
 	canEnterPlanet = false;
     transition = false;
@@ -29,7 +31,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	currentShader = sceneShader;
 	projMatrix = Matrix4::Perspective(1.0f, 20000.0f, (float)width / (float)height, 45.0f);
 	 
-	//draw cubamps and fade out (in) screens
+	//draw cubemaps and fade out (in) screens
 	quad->SetTexture(SOIL_load_OGL_texture("../../Textures/black.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, 0), 0);
 
 
@@ -66,9 +68,9 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 		SOIL_CREATE_NEW_ID, 0);
 
 	cubeMap3 = SOIL_load_OGL_cubemap(
-		TEXTUREDIR"cubemap_redPlanet/hell_lf.tga", TEXTUREDIR"cubemap_redPlanet/hell_rt.tga",
-		TEXTUREDIR"cubemap_redPlanet/hell_up.tga", TEXTUREDIR"cubemap_redPlanet/hell_dn.tga",
-		TEXTUREDIR"cubemap_redPlanet/hell_bk.tga", TEXTUREDIR"cubemap_redPlanet/hell_ft.tga",
+		TEXTUREDIR"cubemap_redPlanet/mandaris_ft.tga", TEXTUREDIR"cubemap_redPlanet/mandaris_bk.tga",
+		TEXTUREDIR"cubemap_redPlanet/mandaris_up.tga", TEXTUREDIR"cubemap_redPlanet/mandaris_dn.tga",
+		TEXTUREDIR"cubemap_redPlanet/mandaris_rt.tga", TEXTUREDIR"cubemap_redPlanet/mandaris_lf.tga",
 		SOIL_LOAD_RGB,
 		SOIL_CREATE_NEW_ID, 0);
 
@@ -264,7 +266,7 @@ void Renderer::DrawSun() {
 
 }
 
-void Renderer::drawScene(int scene) {
+void Renderer::drawScene(int sc) {
 	
 	glDisable(GL_CULL_FACE);
 	SetCurrentShader(textShader);
@@ -273,12 +275,12 @@ void Renderer::drawScene(int scene) {
 	string fps = to_string(1000 / sinceLastTime);
 	fps = fps.substr(0, 4);
 	DrawText("FPS : " + fps, Vector3(0, 0, 0), 16.0f);
-	DrawText("Change scenes ( 1, 2, 3, 4 ) ", Vector3(0, 20, 0), 13.0f);
-	DrawText("1 : Planet Earth ", Vector3(0, 40, 0), 13.0f);
-	DrawText("2 : Red Planet ", Vector3(0, 60, 0), 13.0f);
-	DrawText("3 : Space ", Vector3(0, 80, 0), 13.0f);
-	DrawText("4 : Split Screen Both Planets", Vector3(0, 100, 0), 13.0f);
-	if (scene == 1) {
+	DrawText("Change scenes ( 1, 2, 3, 4 ) ", Vector3(0, 15, 0), 15.0f);
+	DrawText("1 : Planet Earth ", Vector3(0, 30, 0), 15.0f);
+	DrawText("2 : Red Planet ", Vector3(0, 45, 0), 15.0f);
+	DrawText("3 : Space ", Vector3(0, 60, 0), 15.0f);
+	DrawText("4 : Split Screen Both Planets", Vector3(0, 75, 0), 15.0f);
+	if (sc == 1) {
 		root = root1;
 		BuildNodeLists(root);
 		SortNodeLists();
@@ -290,9 +292,13 @@ void Renderer::drawScene(int scene) {
 		DrawSkybox();
 		lights = planet1Lights;
 		DrawShadowScene();
+		if (scene == 4) {
+			glViewport(0, 0, width / 2, height);
+			projMatrix = Matrix4::Perspective(1.0f, 17000.0f, (float)width / 2 / (float)height, 45.0f);
+		}
 		SetCurrentShader(sceneShader);
 	}
-	else if (scene == 2) {
+	else if (sc == 2) {
 		root = root2;
 		BuildNodeLists(root);
 		SortNodeLists();
@@ -304,10 +310,14 @@ void Renderer::drawScene(int scene) {
 		DrawSkybox();
 		lights = planet1Lights;
 		DrawShadowScene();
+		if (scene == 4) {
+			glViewport(width / 2, 0, width / 2, height);
+			projMatrix = Matrix4::Perspective(1.0f, 17000.0f, (float)width / 2 / (float)height, 45.0f);
+		}
 		SetCurrentShader(sceneShader);
 
 	}
-	else if (scene == 3) {
+	else if (sc == 3) {
 		root = root3;
 		BuildNodeLists(root);
 		SortNodeLists();
@@ -354,8 +364,10 @@ void Renderer::drawScene(int scene) {
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex3"), 8);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex4"), 9);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "shadowTex"), 10);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "fog"), fog);
 
 	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float *)& camera->GetPosition());
+
 
 
 	glActiveTexture(GL_TEXTURE10);
@@ -373,7 +385,7 @@ void Renderer::drawScene(int scene) {
 
 	SetCurrentShader(particleShader);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
-	if (root == root1) {
+	if (root == root1 && rain) {
 		emitter->SetParticleSize(8.0f);
 		emitter->SetParticleVariance(0.10f);
 		emitter->SetParticleLifetime(2500.0f);
