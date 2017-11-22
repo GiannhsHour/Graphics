@@ -123,4 +123,7 @@ protected:
 
 	int scene;
 
+	int currentWidth;
+	int currentHeight;
+
 };

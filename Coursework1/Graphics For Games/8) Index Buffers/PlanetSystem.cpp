@@ -61,8 +61,7 @@ void PlanetSystem::Update(float msec) {
 		*Matrix4::Rotation(0.02f, Vector3(0, 1, 0))
 		*Matrix4::Translation(-(sun->GetWorldTransform().GetPositionVector()))
 		*planet3->GetTransform()
-		*Matrix4::Rotation(0.05f, Vector3(0, 1, 0)));
-	    
+		*Matrix4::Rotation(0.05f, Vector3(0, 1, 0)));  
 	planet4->SetTransform(Matrix4::Rotation(0.09f, Vector3(0, 1, 0))
 		*planet4->GetTransform()
 		*Matrix4::Rotation(0.07f, Vector3(0, 1, 0)));

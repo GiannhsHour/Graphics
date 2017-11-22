@@ -266,7 +266,11 @@ void Renderer::drawScene(int scene) {
 	string fps = to_string(1000 / sinceLastTime);
 	fps = fps.substr(0, 4);
 	DrawText("FPS : " + fps, Vector3(0, 0, 0), 16.0f);
-
+	DrawText("Change scenes ( 1, 2, 3, 4 ) ", Vector3(0, 20, 0), 13.0f);
+	DrawText("1 : Planet Earth ", Vector3(0, 40, 0), 13.0f);
+	DrawText("2 : Red Planet ", Vector3(0, 60, 0), 13.0f);
+	DrawText("3 : Space ", Vector3(0, 80, 0), 13.0f);
+	DrawText("4 : Split Screen Both Planets", Vector3(0, 100, 0), 13.0f);
 	if (scene == 1) {
 		root = root1;
 		BuildNodeLists(root);
