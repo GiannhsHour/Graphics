@@ -42,22 +42,6 @@ Planet1Scene::Planet1Scene(void) {
 	wallCeil->SetBoundingRadius(100.0f);
 	wallCeil->setType(0);
 	AddChild(wallCeil);
-
-	/*plants = new SceneNode**[70];
-	for (int i = 0; i < 70; i++) {
-		plants[i] = new SceneNode*[90];
-	}
-
-	for (int i = 0; i < 70; i++) {
-		for (int j = 0; j < 90; j++) {
-			plants[i][j] = new SceneNode(plant, Vector4(1, 0, 0, 1));
-			plants[i][j]->SetModelScale(Vector3(3, 50, 3));
-			plants[i][j]->SetTransform(Matrix4::Translation(Vector3(330 + i * 9 *(rand()%4 + 1), 30, -300 + j * 9  *(rand() % 4 + 1))));
-			plants[i][j]->SetBoundingRadius(2000.0f);
-			plants[i][j]->setType(0);
-			AddChild(plants[i][j]);
-		}
-	}*/
 	
 
 
@@ -65,10 +49,6 @@ Planet1Scene::Planet1Scene(void) {
 
 void Planet1Scene::Update(float msec) {
 	
-	/*for (int i = 0; i < 70; i++) {
-		for (int j = 0; j < 90; j++) {
-			plants[i][j]->SetTransform(plants[i][j]->GetTransform()*Matrix4::Rotation((rand()%3-rand()%3)/80.0f, Vector3(0, 0, 1)));
-		}
-	}*/
+
 	SceneNode::Update(msec);
 }

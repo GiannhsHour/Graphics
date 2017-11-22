@@ -22,14 +22,16 @@ public:
 	virtual void RenderScene();
 	Light* getLight(int index) { return lights[index]; }
 	Camera* getCamera() { return camera; }
-	void setRoot(int scene) {
-		switch (scene)
+	void setRoot(int s) {
+		switch (s)
 		{
-		case 1: root = root1;
+		case 1: scene = 1;
 			break;
-		case 2: root = root2;
+		case 2: scene = 2;
 			break;
-		case 3: root = root3;
+		case 3: scene = 3;
+			break;
+		case 4: scene = 4;
 			break;
 		default:
 			break;
@@ -61,6 +63,7 @@ protected:
 	void DrawShadowScene();
 	void DrawSun();
 	void SetShaderParticleSize(float f);	
+	void drawScene(int scene);
 
 	ParticleEmitter*	emitter;	
 
@@ -117,5 +120,7 @@ protected:
 	
 	float fadeOutAlpha;
 	int visitPlanet;
+
+	int scene;
 
 };

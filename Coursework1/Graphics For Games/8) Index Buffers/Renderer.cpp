@@ -93,6 +93,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	root2 = new SceneNode();
 	root3 = new SceneNode();
 	root = root3;
+	scene = 3;
 	
 
 	SceneNode* scene1 = new SceneNode();
@@ -256,55 +257,23 @@ void Renderer::DrawSun() {
 
 }
 
-void Renderer::RenderScene() {
-	BuildNodeLists(root);
-	SortNodeLists();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);		// Clear Screen And Depth Buffer
+void Renderer::drawScene(int scene) {
+	
 	glDisable(GL_CULL_FACE);
-	SetCurrentShader(textShader);	
-												
+	SetCurrentShader(textShader);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
-	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
 	string fps = to_string(1000 / sinceLastTime);
-	fps = fps.substr(0,4);
+	fps = fps.substr(0, 4);
 	DrawText("FPS : " + fps, Vector3(0, 0, 0), 16.0f);
-	if(root== root1 || root == root2) DrawText("Go to Space (Q)", Vector3(width/3, 0, 0), 20.0f);
-	float distanceFromPlanetEarth = (camera->GetPosition() - planetSystem->getEarthPosition()).Length();
-	float distanceFromPlanetRed = (camera->GetPosition() - planetSystem->getRedPlanetPosition()).Length();
-	if (distanceFromPlanetEarth < 2000.0f && root == root3) {
-		DrawText("Enter Planet Earth (E)", Vector3(width/4, height / 4, 0), 20.0f);
-		canEnterPlanet = true;
-		if (planetEnter) {
-			transition = true;
-			fadeOut = true;
-			visitPlanet = 1;
-		}
-	}
-	else if (distanceFromPlanetRed < 3000.0f && root == root3) {
-		DrawText("Enter Red Planet (E)", Vector3(width /4, height / 4,  0), 20.0f);
-		canEnterPlanet = true;
-		if (planetEnter) {
-			transition = true;
-			fadeOut = true;
-			visitPlanet = 2;
-		}
-	}
-	else canEnterPlanet = false;
-	if (goToSpace) {
-		if(!transition) {
-			transition = true;
-			fadeOut = true;
-		}
-		goToSpace = false;
-		visitPlanet = 3;
-	}
 
-	viewMatrix = camera->BuildViewMatrix();
-	projMatrix = Matrix4::Perspective(1.0f, 17000.0f, (float)width / (float)height, 45.0f);
-	
-	if (root == root1 || root == root2) {
+	if (scene == 1) {
+		root = root1;
+		BuildNodeLists(root);
+		SortNodeLists();
+		DrawText("Go to Space (Q)", Vector3(width / 3, 0, 0), 20.0f);
+		viewMatrix = camera->BuildViewMatrix();
+		projMatrix = Matrix4::Perspective(1.0f, 17000.0f, (float)width / (float)height, 45.0f);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap2);
 		DrawSkybox();
@@ -312,7 +281,48 @@ void Renderer::RenderScene() {
 		DrawShadowScene();
 		SetCurrentShader(sceneShader);
 	}
-	else if (root == root3) {
+	else if (scene == 2) {
+		root = root2;
+		BuildNodeLists(root);
+		SortNodeLists();
+		DrawText("Go to Space (Q)", Vector3(width / 3, 0, 0), 20.0f);
+		viewMatrix = camera->BuildViewMatrix();
+		projMatrix = Matrix4::Perspective(1.0f, 17000.0f, (float)width / (float)height, 45.0f);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap2);
+		DrawSkybox();
+		lights = planet1Lights;
+		DrawShadowScene();
+		SetCurrentShader(sceneShader);
+
+	}
+	else if (scene == 3) {
+		root = root3;
+		BuildNodeLists(root);
+		SortNodeLists();
+		float distanceFromPlanetEarth = (camera->GetPosition() - planetSystem->getEarthPosition()).Length();
+		float distanceFromPlanetRed = (camera->GetPosition() - planetSystem->getRedPlanetPosition()).Length();
+		if (distanceFromPlanetEarth < 2000.0f && root == root3) {
+			DrawText("Enter Planet Earth (E)", Vector3(width / 4, height / 4, 0), 20.0f);
+			canEnterPlanet = true;
+			if (planetEnter) {
+				transition = true;
+				fadeOut = true;
+				visitPlanet = 1;
+			}
+		}
+		else if (distanceFromPlanetRed < 3000.0f && root == root3) {
+			DrawText("Enter Red Planet (E)", Vector3(width / 4, height / 4, 0), 20.0f);
+			canEnterPlanet = true;
+			if (planetEnter) {
+				transition = true;
+				fadeOut = true;
+				visitPlanet = 2;
+			}
+		}
+		else canEnterPlanet = false;
+		viewMatrix = camera->BuildViewMatrix();
+		projMatrix = Matrix4::Perspective(1.0f, 17000.0f, (float)width / (float)height, 45.0f);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap);
 		DrawSkybox();
@@ -320,6 +330,7 @@ void Renderer::RenderScene() {
 		DrawShadowScene();
 		SetCurrentShader(planetShader);
 	}
+
 	glUseProgram(currentShader->GetProgram());
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex1"), 1);
@@ -332,15 +343,15 @@ void Renderer::RenderScene() {
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex3"), 8);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex4"), 9);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "shadowTex"), 10);
-	
+
 	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float *)& camera->GetPosition());
-	
-	
+
+
 	glActiveTexture(GL_TEXTURE10);
 	glBindTexture(GL_TEXTURE_2D, shadowTex);
-	
+
 	viewMatrix = camera->BuildViewMatrix();
-	
+
 	UpdateShaderMatrices();
 	SetShaderLight(lights);
 
@@ -348,7 +359,6 @@ void Renderer::RenderScene() {
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	DrawNodes();
-	DrawSun();
 
 	SetCurrentShader(particleShader);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
@@ -363,19 +373,68 @@ void Renderer::RenderScene() {
 			for (int j = 0; j < 20; j++) {
 				emitter->SetDirection(Vector3(0, -1, 0));
 				int ran = rand();
-				modelMatrix = Matrix4::Translation(Vector3(350*i +ran%350, ran % 500 + 2500, 350 * j + ran % 350));
+				modelMatrix = Matrix4::Translation(Vector3(350 * i + ran % 350, ran % 500 + 2500, 350 * j + ran % 350));
 				UpdateShaderMatrices();
 				emitter->Draw();
 			}
 		}
 	}
+	ClearNodeLists();
+}
+
+void Renderer::RenderScene() {
+
+
+	if (goToSpace) {
+		if (!transition) {
+			transition = true;
+			fadeOut = true;
+		}
+		goToSpace = false;
+		visitPlanet = 3;
+	}
+
 	
-	teleport();
-	
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	if (scene == 1) {
+		glDisable(GL_SCISSOR_TEST);
+		glViewport(0, 0, width, height);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		drawScene(1);
+		teleport();
+	}
+	if (scene == 2) {
+		glDisable(GL_SCISSOR_TEST);
+		glViewport(0, 0, width, height);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		drawScene(2);
+		teleport();
+	}
+	if (scene == 3) {
+		glDisable(GL_SCISSOR_TEST);
+		glViewport(0, 0, width, height);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		drawScene(3);
+		teleport();
+	}
+	if (scene == 4) {
+		glEnable(GL_SCISSOR_TEST);
+		glViewport(0, 0, width/2, height);
+		glScissor(0, 0, width / 2, height);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		drawScene(1);
+		teleport();
+		glViewport(width / 2, 0, width / 2, height);
+		glScissor(width / 2, 0, width / 2, height);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		drawScene(2);
+		teleport();
+	}
+
+
+
 	glUseProgram(0);
 	SwapBuffers();
-	ClearNodeLists();
+	
 }
 void	Renderer::SetShaderParticleSize(float f) {
 	glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "particleSize"), f);
@@ -386,9 +445,9 @@ void Renderer::teleport() {
 		if (fadeOut) {
 			fadeOutAlpha += 0.008;
 			if (fadeOutAlpha >= 1.0) {
-				if (visitPlanet == 1) root = root1;
-				else if (visitPlanet == 2) root = root2;
-				else root = root3;
+				if (visitPlanet == 1) scene = 1;
+				else if (visitPlanet == 2) scene = 2;
+				else scene = 3;
 				camera->SetPosition(Vector3(3500, 500, 4000));
 				fadeIn = true;
 				fadeOut = false;

@@ -31,6 +31,9 @@ int main() {
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_3)) {
 			renderer.setRoot(3);
 		}
+		if (Window::GetKeyboard()->KeyDown(KEYBOARD_4)) {
+			renderer.setRoot(4);
+		}
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_P)) {
 			light->SetAmbient(light->GetAmbient() + 0.005f);
 		}
