@@ -54,6 +54,11 @@ public:
 		if (fog) fog = 0;
 		else fog = 1;
 	}
+
+	void rotateSun() {
+		if(scene == 1 || scene == 2)
+		lights[0]->SetPosition(Matrix4::Translation(Vector3(4000.0f, 0.0f, 4200.0f)) * Matrix4::Rotation(0.5f, Vector3(0.0f, 0.0f, 1.0f))  * Matrix4::Translation(-Vector3(4000.0f, 0.0f, 4200.0f))  * lights[0]->GetPosition());
+	}
 	void teleport();
 
 	void	DrawText(const std::string &text, const Vector3 &position, const float size = 10.0f, const bool perspective = false);
@@ -69,6 +74,7 @@ protected:
 	void DrawSun();
 	void SetShaderParticleSize(float f);	
 	void drawScene(int scene);
+	void thunder();
 
 	ParticleEmitter*	emitter;	
 
@@ -96,8 +102,9 @@ protected:
 	Shader * particleShader;
 	Shader * fadeOutShader;
 
-	GLuint shadowTex;
-	GLuint shadowFBO;
+	GLuint shadowTex[2];
+	GLuint shadowFBO[2];
+
 
 	Frustum frameFrustum;
 	
@@ -132,7 +139,14 @@ protected:
 	int currentWidth;
 	int currentHeight;
 
+	float total_time;
 	bool rain;
 	int fog;
+
+
+	int numberOfStrikes;
+	Light * thunderLight;
+	bool thunderStart;
+	int thunderTime;
 
 };

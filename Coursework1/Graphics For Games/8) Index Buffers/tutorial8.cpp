@@ -64,9 +64,8 @@ int main() {
 		}
 
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_R)) {
-		//	cout << renderer.getCamera()->GetPosition().x << " " << renderer.getCamera()->GetPosition().y << " " << renderer.getCamera()->GetPosition().z << endl;
-			renderer.getLight(0)->SetPosition(Matrix4::Translation(Vector3(4000.0f, 0.0f, 4200.0f)) * Matrix4::Rotation(rotation, Vector3(0.0f, 0.0f, 1.0f))  * Matrix4::Translation(-Vector3(4000.0f, 0.0f, 4200.0f))  * renderer.getLight(0)->GetPosition());
-	
+			
+			renderer.rotateSun();
 		}
 
 		float sinceLastTime = w.GetTimer()->GetTimedMS();

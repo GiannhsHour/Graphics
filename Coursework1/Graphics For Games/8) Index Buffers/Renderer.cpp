@@ -8,6 +8,8 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	rain = true;
 	fog = 1;
 	planetEnter = false;
+	total_time = 0;
+	thunderStart = false;
 	canEnterPlanet = false;
     transition = false;
 	fadeOut = false;
@@ -29,7 +31,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	particleShader = new Shader(SHADERDIR"particleVertex.glsl",SHADERDIR"particleFragment.glsl",SHADERDIR"particleGeometry.glsl");
 	basicFont = new Font(SOIL_load_OGL_texture(TEXTUREDIR"tahoma.tga",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_COMPRESS_TO_DXT),16,16);
 	currentShader = sceneShader;
-	projMatrix = Matrix4::Perspective(1.0f, 20000.0f, (float)width / (float)height, 45.0f);
+	projMatrix = Matrix4::Perspective(1.0f, 17000.0f, (float)width / (float)height, 45.0f);
 	 
 	//draw cubemaps and fade out (in) screens
 	quad->SetTexture(SOIL_load_OGL_texture("../../Textures/black.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, 0), 0);
@@ -39,13 +41,24 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	m->LoadOBJMesh(MESHDIR"sphere_earth.obj");
 	earth_sun = m;
 
+	//lights
+
 	Light *sunLight = new Light(Vector3(0, 0, 0), Vector4(1, 1, 1, 1), 15000.0f);
 	sunLight->SetAmbient(0.01f);
 	planetSystemLights.push_back(sunLight);
 
-	Light *earthlight = new Light(Vector3(10000, 4000, 4600), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X)*2.5f);
+	Light *earthlight = new Light(Vector3(10000, 4000, 4600), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X)*2.0f);
+	thunderLight = new Light(Vector3(10000, 4000, 4600), Vector4(1, 1, 1, 1), 10000);
+	thunderLight->SetColour(Vector4(0, 0, 0,1));
 	earthlight->SetAmbient(0.01f);
+	thunderLight->SetAmbient(0.00f);
 	planet1Lights.push_back(earthlight);
+	planet1Lights.push_back(thunderLight);
+
+	Light *redPlanetLight = new Light(Vector3(15000, 7000, 15000), Vector4(1, 1, 1, 1), 30000);
+	redPlanetLight->SetAmbient(0.05f);
+	planet2Lights.push_back(redPlanetLight);
+	
 	lights = planetSystemLights;
 
 	if (!sceneShader->LinkProgram() || !planetShader->LinkProgram() || !skyboxShader->LinkProgram() || !shadowShader->LinkProgram() 
@@ -164,26 +177,31 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	SetTextureRepeating(sphere->GetBumpMap(0),true); SetTextureRepeating(sphere->GetBumpMap(1), true); SetTextureRepeating(sphere->GetBumpMap(2), true);
 	root3->AddChild(planetSystem);
 	//shadow
-	glGenTextures(1, &shadowTex);
-	glBindTexture(GL_TEXTURE_2D, shadowTex);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	for (int i = 0; i < 2; i++) {
+		glGenTextures(1, &shadowTex[i]);
+		glBindTexture(GL_TEXTURE_2D, shadowTex[i]);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
-		SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+			SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE,
-		GL_COMPARE_R_TO_TEXTURE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE,
+			GL_COMPARE_R_TO_TEXTURE);
 
-	glBindTexture(GL_TEXTURE_2D, 0);
+		glBindTexture(GL_TEXTURE_2D, 0);
 
-	glGenFramebuffers(1, &shadowFBO);
+		glGenFramebuffers(1, &shadowFBO[i]);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowTex, 0);
-	glDrawBuffer(GL_NONE);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO[i]);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowTex[i], 0);
+		glDrawBuffer(GL_NONE);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+	
+
+
 
 	glEnable(GL_DEPTH_TEST);
 	
@@ -226,45 +244,50 @@ void Renderer::DrawSkybox() {
 }
 
 void Renderer::DrawShadowScene() {
-	glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
+	for (int i = 0; i < lights.size(); i++) {
+		glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO[i]);
 
-	glClear(GL_DEPTH_BUFFER_BIT);
+		glClear(GL_DEPTH_BUFFER_BIT);
 
-	glViewport(1, 1, SHADOWSIZE - 2, SHADOWSIZE - 2);
+		glViewport(1, 1, SHADOWSIZE - 2, SHADOWSIZE - 2);
 
-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
-	SetCurrentShader(shadowShader);
-	Vector3 target = Vector3(0, 0, 0);
-	if (root == root1) {
-		target = Vector3(3500, 400, 5000);
+		SetCurrentShader(shadowShader);
+		Vector3 target = Vector3(0, 0, 0);
+		if (root == root1) {
+			target = Vector3(3500, 400, 5000);
+		}
+		/*if (scene == 4) {
+			projMatrix = Matrix4::Perspective(1.0f, 17000.0f, (float)width  / (float)height, 45.0f);
+		}*/
+		viewMatrix = Matrix4::BuildViewMatrix(lights[i]->GetPosition(), target);
+		shadowMatrix[i] = biasMatrix *(projMatrix * viewMatrix);
+
+		UpdateShaderMatrices();
+
+		DrawNodes();
+
+		glUseProgram(0);
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		glViewport(0, 0, width, height);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
-	viewMatrix = Matrix4::BuildViewMatrix(lights[0]->GetPosition(), target);
-	shadowMatrix = biasMatrix *(projMatrix * viewMatrix);
-
-	UpdateShaderMatrices();
-
-	DrawNodes();
-
-	glUseProgram(0);
-	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-	glViewport(0, 0, width, height);
-	
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 }
 
-void Renderer::DrawSun() {
-	modelMatrix = Matrix4::Translation(Vector3(lights[0]->GetPosition().x, lights[0]->GetPosition().y, lights[0]->GetPosition().z))*
-	Matrix4::Scale(Vector3(200, 200, 200));
-	Matrix4 tempMatrix = shadowMatrix * modelMatrix;
-
-	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "shadowMatrix"), 1, false, *& tempMatrix.values);
-	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "modelMatrix"), 1, false, *& modelMatrix.values);
-
-	earth_sun->Draw();
-
-}
+//void Renderer::DrawSun() {
+//	modelMatrix = Matrix4::Translation(Vector3(lights[0]->GetPosition().x, lights[0]->GetPosition().y, lights[0]->GetPosition().z))*
+//	Matrix4::Scale(Vector3(200, 200, 200));
+//	Matrix4 tempMatrix = shadowMatrix[0] * modelMatrix;
+//
+//	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "shadowMatrix"), 1, false, *& tempMatrix.values);
+//	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "modelMatrix"), 1, false, *& modelMatrix.values);
+//
+//	earth_sun->Draw();
+//
+//}
 
 void Renderer::drawScene(int sc) {
 	
@@ -308,7 +331,7 @@ void Renderer::drawScene(int sc) {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap3);
 		DrawSkybox();
-		lights = planet1Lights;
+		lights = planet2Lights;
 		DrawShadowScene();
 		if (scene == 4) {
 			glViewport(width / 2, 0, width / 2, height);
@@ -363,7 +386,8 @@ void Renderer::drawScene(int sc) {
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex2"), 7);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex3"), 8);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex4"), 9);
-	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "shadowTex"), 10);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "shadowTex1"), 10);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "shadowTex2"), 11);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "fog"), fog);
 
 	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float *)& camera->GetPosition());
@@ -371,7 +395,11 @@ void Renderer::drawScene(int sc) {
 
 
 	glActiveTexture(GL_TEXTURE10);
-	glBindTexture(GL_TEXTURE_2D, shadowTex);
+	glBindTexture(GL_TEXTURE_2D, shadowTex[0]);
+
+	glActiveTexture(GL_TEXTURE11);
+	glBindTexture(GL_TEXTURE_2D, shadowTex[1]);
+
 
 	viewMatrix = camera->BuildViewMatrix();
 
@@ -401,8 +429,26 @@ void Renderer::drawScene(int sc) {
 				emitter->Draw();
 			}
 		}
+		if(!thunderStart) thunderTime = rand()*20;
+		if (thunderTime%283 == 0 && !thunderStart) {
+			thunderStart = true;
+			thunderLight->SetColour(Vector4(1, 1, 1, 1));	
+		}
+		thunder();
+		
 	}
 	ClearNodeLists();
+}
+
+void Renderer::thunder() {
+	if (thunderStart) {
+		total_time += sinceLastTime*1000;
+		if (total_time > (float)thunderTime) {
+			thunderLight->SetColour(Vector4(0, 0, 0, 1));
+			thunderStart = false;
+			total_time = 0;
+		}
+	}
 }
 
 void Renderer::RenderScene() {

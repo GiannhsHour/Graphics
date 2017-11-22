@@ -6,7 +6,8 @@ uniform sampler2D diffuseTex2;
 uniform sampler2D bumpTex ;
 uniform sampler2D bumpTex1 ;
 uniform sampler2D bumpTex2 ;
-uniform sampler2DShadow shadowTex ;
+uniform sampler2DShadow shadowTex1 ;
+uniform sampler2DShadow shadowTex2 ;
 uniform int fog;
 
 #define MAX_LIGHTS 10
@@ -29,7 +30,8 @@ uniform int type;
  vec3 tangent ; 
  vec3 binormal ; 
  vec3 worldPos ;
- vec4 shadowProj ;
+ vec4 shadowProj1 ;
+ vec4 shadowProj2 ;
  } IN ;
 
  out vec4 FragColor ;
@@ -61,8 +63,9 @@ if(type == 1){
 
    diffuse.a = 1.0f;
   FragColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);
-   float shadow = 1.0; 
+   
   for(int i =0; i< numLights; i++){
+	  float shadow = 1.0; 
       vec4 tempColour;
 	  vec3 incident = normalize ( allLights[i].lightPos - IN.worldPos );
 	  float lambert = max (0.0 , dot ( incident , normal ));
@@ -74,9 +77,12 @@ if(type == 1){
 	  float rFactor = max (0.0 , dot ( halfDir , normal )) * 0.2;
 	  float sFactor = pow ( rFactor , 5.0 );
 	 
-
-	 if( IN . shadowProj . w > 0.0) { 
-		shadow = textureProj ( shadowTex , IN . shadowProj );
+		
+	  if( IN . shadowProj1 . w > 0.0 && i == 0) { 
+		shadow = textureProj ( shadowTex1 , IN . shadowProj1 );
+	  }
+	  else if( IN . shadowProj2 . w > 0.0 && i == 1) { 
+		shadow = textureProj ( shadowTex2 , IN . shadowProj2 );
 	  }
 
 	  lambert *= shadow ; 
