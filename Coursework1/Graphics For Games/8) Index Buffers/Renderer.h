@@ -98,6 +98,7 @@ protected:
 	
 	GLuint cubeMap;
 	GLuint cubeMap2;
+	GLuint cubeMap3;
 
 	vector<Light *> lights;
 	vector<Light *> planetSystemLights;

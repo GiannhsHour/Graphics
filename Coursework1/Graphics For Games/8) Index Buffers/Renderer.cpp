@@ -65,6 +65,13 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 		SOIL_LOAD_RGB,
 		SOIL_CREATE_NEW_ID, 0);
 
+	cubeMap3 = SOIL_load_OGL_cubemap(
+		TEXTUREDIR"cubemap_redPlanet/hell_lf.tga", TEXTUREDIR"cubemap_redPlanet/hell_rt.tga",
+		TEXTUREDIR"cubemap_redPlanet/hell_up.tga", TEXTUREDIR"cubemap_redPlanet/hell_dn.tga",
+		TEXTUREDIR"cubemap_redPlanet/hell_bk.tga", TEXTUREDIR"cubemap_redPlanet/hell_ft.tga",
+		SOIL_LOAD_RGB,
+		SOIL_CREATE_NEW_ID, 0);
+
 	
 	
 	heightMap1->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"rock.PNG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS),0);
@@ -293,7 +300,7 @@ void Renderer::drawScene(int scene) {
 		viewMatrix = camera->BuildViewMatrix();
 		projMatrix = Matrix4::Perspective(1.0f, 17000.0f, (float)width / (float)height, 45.0f);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap2);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap3);
 		DrawSkybox();
 		lights = planet1Lights;
 		DrawShadowScene();
