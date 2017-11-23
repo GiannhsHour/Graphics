@@ -149,7 +149,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	SceneNode* scene2 = new SceneNode();
 	scene2->SetColour(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 	scene2->SetTransform(Matrix4::Translation(Vector3(0.0f, 0.0f, 0.0f)));
-	scene2->SetModelScale(Vector3(2.0f, 2.0f, 2.0f));
+	scene2->SetModelScale(Vector3(2.0f, 4.0f, 2.0f));
 	scene2->SetBoundingRadius(10000.0f);
 	scene2->SetMesh(heightMap2);
 	scene2->setType(2);
