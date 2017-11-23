@@ -7,7 +7,7 @@
 int main() {
 	Light * light;
 	srand(time(NULL));
-	Window w("Per Pixel Lighting!", 800, 600, false);
+	Window w("Per Pixel Lighting!", 800, 600, true);
 	if (!w.HasInitialised()) {
 		return -1;
 	}
@@ -22,16 +22,16 @@ int main() {
 	float rotation = 1.0f;
 	while (w.UpdateWindow() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE)) {
 		light = renderer.getLight(0);
-		if (Window::GetKeyboard()->KeyDown(KEYBOARD_1)) {
+		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_1)) {
 			renderer.setRoot(1);
 		}
-		if (Window::GetKeyboard()->KeyDown(KEYBOARD_2)) {
+		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_2)) {
 			renderer.setRoot(2);
 		}
-		if (Window::GetKeyboard()->KeyDown(KEYBOARD_3)) {
+		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_3)) {
 			renderer.setRoot(3);
 		}
-		if (Window::GetKeyboard()->KeyDown(KEYBOARD_4)) {
+		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_4)) {
 			renderer.setRoot(4);
 		}
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_P)) {
@@ -47,21 +47,21 @@ int main() {
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_K))
 			light->SetRadius(light->GetRadius() - 30.0f);
 
-		if (Window::GetKeyboard()->KeyDown(KEYBOARD_E)) {
+		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_E)) {
 			if (renderer.getCanEnterPlanet()) {
 				renderer.setPlanetEnter(true);
 			}
 		}
 
-		if (Window::GetKeyboard()->KeyDown(KEYBOARD_Q)) {
+		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_Q)) {
 			renderer.setGoToSpace(true);
 		}
 
-		if (Window::GetKeyboard()->KeyDown(KEYBOARD_F)) {
+		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_F)) {
 			renderer.toggleFog();
 		}
 
-		if (Window::GetKeyboard()->KeyDown(KEYBOARD_G)) {
+		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_G)) {
 			renderer.toggleRain();
 		}
 

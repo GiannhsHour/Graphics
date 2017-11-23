@@ -12,9 +12,9 @@ public:
 		OBJMesh * m = new OBJMesh();
 		m->LoadOBJMesh(MESHDIR"cube2.obj");
 		wall = m;
-		OBJMesh * p = new OBJMesh();
+		/*OBJMesh * p = new OBJMesh();
 		p->LoadOBJMesh(MESHDIR"cube2.obj");
-		plant = p;
+		plant = p;*/
 
 	}
 	static void DeletePlanetSystem() { delete wall; }

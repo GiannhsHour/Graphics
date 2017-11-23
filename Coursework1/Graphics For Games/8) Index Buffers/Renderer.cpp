@@ -47,8 +47,8 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	sunLight->SetAmbient(0.01f);
 	planetSystemLights.push_back(sunLight);
 
-	Light *earthlight = new Light(Vector3(10000, 4000, 4600), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X)*2.0f);
-	thunderLight = new Light(Vector3(10000, 4000, 4600), Vector4(1, 1, 1, 1), 10000);
+	Light *earthlight = new Light(Vector3(10000, 4000, 4600), Vector4(1, 1, 1, 1), 15000);
+	thunderLight = new Light(Vector3(10000, 4000, 4600), Vector4(1, 1, 1, 1), 12000);
 	thunderLight->SetColour(Vector4(0, 0, 0,1));
 	earthlight->SetAmbient(0.03f);
 	thunderLight->SetAmbient(0.00f);
@@ -291,14 +291,14 @@ void Renderer::drawScene(int sc) {
 	DrawText("2 : Red Planet ", Vector3(0, 45, 0), 15.0f);
 	DrawText("3 : Space ", Vector3(0, 60, 0), 15.0f);
 	DrawText("4 : Split Screen Both Planets", Vector3(0, 75, 0), 15.0f);
-	DrawText("5 : Inc-Dec ambient light (O,P) ", Vector3(0, 90, 0), 15.0f);
-	DrawText("6 : Inc-Dec light radius (K,L) ", Vector3(0, 105, 0), 15.0f);
+	DrawText("(O,P) : Adjust ambient light", Vector3(0, 90, 0), 15.0f);
+	DrawText("(K,L) : Adjust light radius", Vector3(0, 105, 0), 15.0f);
 	if (sc == 1) {
 		root = root1;
 		BuildNodeLists(root);
 		SortNodeLists();
-		DrawText("7 : Rotate sun (R) ", Vector3(0, 120, 0), 15.0f);
-		DrawText("8 : Toggle rain (G), Toggle Fog (F) ", Vector3(0, 135, 0), 15.0f);
+		DrawText("(R) : Rotate sun", Vector3(0, 120, 0), 15.0f);
+		DrawText("(G , F) : Toggle rain , Toggle Fog", Vector3(0, 135, 0), 15.0f);
 		DrawText("Go to Space (Q)", Vector3(width / 3, height - 18, 0), 18.0f);
 		viewMatrix = camera->BuildViewMatrix();
 		projMatrix = Matrix4::Perspective(1.0f, 17000.0f, (float)width / (float)height, 45.0f);
@@ -318,7 +318,7 @@ void Renderer::drawScene(int sc) {
 		BuildNodeLists(root);
 		SortNodeLists();
 		DrawText("Go to Space (Q)", Vector3(width / 3, height - 18, 0), 18.0f);
-		DrawText("7 : Rotate sun (R) ", Vector3(0, 120, 0), 15.0f);
+		DrawText("(R) : Rotate sun", Vector3(0, 120, 0), 15.0f);
 		viewMatrix = camera->BuildViewMatrix();
 		projMatrix = Matrix4::Perspective(1.0f, 17000.0f, (float)width / (float)height, 45.0f);
 		glActiveTexture(GL_TEXTURE0);
