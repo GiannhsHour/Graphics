@@ -256,7 +256,7 @@ void Renderer::DrawShadowScene() {
 
 		SetCurrentShader(shadowShader);
 		Vector3 target = Vector3(0, 0, 0);
-		if (root == root1) {
+		if (root == root1 || root == root2) {
 			target = Vector3(3500, 400, 5000);
 		}
 	
