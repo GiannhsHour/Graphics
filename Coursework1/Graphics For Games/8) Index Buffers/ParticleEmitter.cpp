@@ -222,4 +222,5 @@ void ParticleEmitter::Draw()	{
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	glBindVertexArray(0); //Remember to turn off our VAO ;)
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 };

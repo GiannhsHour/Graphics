@@ -47,16 +47,16 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	sunLight->SetAmbient(0.01f);
 	planetSystemLights.push_back(sunLight);
 
-	Light *earthlight = new Light(Vector3(10000, 4000, 4600), Vector4(1, 1, 1, 1), 15000);
-	thunderLight = new Light(Vector3(10000, 4000, 4600), Vector4(1, 1, 1, 1), 12000);
+	Light *earthlight = new Light(Vector3(10000, 4000, 4600), Vector4(1, 1, 1, 1), 12000);
+	thunderLight = new Light(Vector3(9000, 3500, 5500), Vector4(1, 1, 1, 1), 14000);
 	thunderLight->SetColour(Vector4(0, 0, 0,1));
-	earthlight->SetAmbient(0.03f);
+	earthlight->SetAmbient(0.01f);
 	thunderLight->SetAmbient(0.00f);
 	planet1Lights.push_back(earthlight);
 	planet1Lights.push_back(thunderLight);
 
 	Light *redPlanetLight = new Light(Vector3(15000, 7000, 15000), Vector4(1, 1, 1, 1), 35000);
-	redPlanetLight->SetAmbient(0.03f);
+	redPlanetLight->SetAmbient(0.02f);
 	planet2Lights.push_back(redPlanetLight);
 	
 	lights = planetSystemLights;
@@ -278,11 +278,22 @@ void Renderer::DrawShadowScene() {
 /* Draw scenes
    param sc: scene to draw*/
 void Renderer::drawScene(int sc) {
-	
 	glDisable(GL_CULL_FACE);
+	glActiveTexture(GL_TEXTURE0);
+	if (sc == 1) {
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap2);
+	}
+	else if (sc == 2) {
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap3);
+	}
+	else {
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap);
+	}
+	DrawSkybox();
+
 	SetCurrentShader(textShader);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	
 	string fps = to_string(1000 / sinceLastTime);
 	fps = fps.substr(0, 4);
 	DrawText("FPS : " + fps, Vector3(0, 0, 0), 16.0f);
@@ -302,9 +313,7 @@ void Renderer::drawScene(int sc) {
 		DrawText("Go to Space (Q)", Vector3(width / 3, height - 18, 0), 18.0f);
 		viewMatrix = camera->BuildViewMatrix();
 		projMatrix = Matrix4::Perspective(1.0f, 17000.0f, (float)width / (float)height, 45.0f);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap2);
-		DrawSkybox();
+		
 		lights = planet1Lights;
 		DrawShadowScene();
 		if (scene == 4) {
@@ -321,9 +330,7 @@ void Renderer::drawScene(int sc) {
 		DrawText("(R) : Rotate sun", Vector3(0, 120, 0), 15.0f);
 		viewMatrix = camera->BuildViewMatrix();
 		projMatrix = Matrix4::Perspective(1.0f, 17000.0f, (float)width / (float)height, 45.0f);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap3);
-		DrawSkybox();
+	
 		lights = planet2Lights;
 		DrawShadowScene();
 		if (scene == 4) {
@@ -360,9 +367,7 @@ void Renderer::drawScene(int sc) {
 		else canEnterPlanet = false;
 		viewMatrix = camera->BuildViewMatrix();
 		projMatrix = Matrix4::Perspective(1.0f, 17000.0f, (float)width / (float)height, 45.0f);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap);
-		DrawSkybox();
+
 		lights = planetSystemLights;
 		DrawShadowScene();
 		SetCurrentShader(planetShader);
