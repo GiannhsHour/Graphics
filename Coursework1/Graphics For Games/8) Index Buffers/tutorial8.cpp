@@ -7,7 +7,7 @@
 int main() {
 	Light * light;
 	srand(time(NULL));
-	Window w("Per Pixel Lighting!", 800, 600, true);
+	Window w("Per Pixel Lighting!", 800, 600, false);
 	if (!w.HasInitialised()) {
 		return -1;
 	}

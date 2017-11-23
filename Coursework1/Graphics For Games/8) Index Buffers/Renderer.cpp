@@ -272,9 +272,8 @@ void Renderer::DrawShadowScene() {
 		glUseProgram(0);
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
-		if (leftScreen) glViewport(0, 0, width / 2, height);
-		else if (rightScreen) glViewport(width / 2, 0, width / 2, height);
-		else glViewport(0, 0, width, height);
+	
+		glViewport(0, 0, width, height);
 		
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -478,8 +477,6 @@ void Renderer::RenderScene() {
 		glDisable(GL_SCISSOR_TEST);
 		glViewport(0, 0, width, height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		leftScreen = false;
-		rightScreen = false;
 		drawScene(1);
 		teleport();
 	}
@@ -487,8 +484,6 @@ void Renderer::RenderScene() {
 		glDisable(GL_SCISSOR_TEST);
 		glViewport(0, 0, width, height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		leftScreen = false;
-		rightScreen = false;
 		drawScene(2);
 		teleport();
 	}
@@ -496,8 +491,6 @@ void Renderer::RenderScene() {
 		glDisable(GL_SCISSOR_TEST);
 		glViewport(0, 0, width, height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		leftScreen = false;
-		rightScreen = false;
 		drawScene(3);
 		teleport();
 	}
@@ -506,15 +499,11 @@ void Renderer::RenderScene() {
 		glViewport(0, 0, width/2, height);
 		glScissor(0, 0, width / 2, height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		leftScreen = true;
-		rightScreen = false;
 		drawScene(1);
 		teleport();
 		glViewport(width / 2, 0, width / 2, height);
 		glScissor(width / 2, 0, width / 2, height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		leftScreen = false;
-		rightScreen = true;
 		drawScene(2);
 		teleport();
 	}
