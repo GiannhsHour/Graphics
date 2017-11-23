@@ -50,13 +50,13 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	Light *earthlight = new Light(Vector3(10000, 4000, 4600), Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X)*2.0f);
 	thunderLight = new Light(Vector3(10000, 4000, 4600), Vector4(1, 1, 1, 1), 10000);
 	thunderLight->SetColour(Vector4(0, 0, 0,1));
-	earthlight->SetAmbient(0.01f);
+	earthlight->SetAmbient(0.03f);
 	thunderLight->SetAmbient(0.00f);
 	planet1Lights.push_back(earthlight);
 	planet1Lights.push_back(thunderLight);
 
-	Light *redPlanetLight = new Light(Vector3(15000, 7000, 15000), Vector4(1, 1, 1, 1), 30000);
-	redPlanetLight->SetAmbient(0.02f);
+	Light *redPlanetLight = new Light(Vector3(15000, 7000, 15000), Vector4(1, 1, 1, 1), 35000);
+	redPlanetLight->SetAmbient(0.03f);
 	planet2Lights.push_back(redPlanetLight);
 	
 	lights = planetSystemLights;
@@ -101,7 +101,6 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	heightMap2->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"red_planet_normal.PNG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
 
 
-	//Planet 1
 	if (!heightMap1->GetTexture(0) || !cubeMap ) {
 		return;
 	}
@@ -118,6 +117,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	scene = 3;
 	
 
+	//planet earth
 	SceneNode* scene1 = new SceneNode();
 	scene1->SetColour(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 	scene1->SetTransform(Matrix4::Translation(Vector3(0, 0.0f, 0.0f)));
@@ -127,6 +127,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	scene1->setType(1);
 	root1->AddChild(scene1);
 
+	//house in planet earth
 	planet1Scene = new Planet1Scene();
 	planet1Scene->SetTransform(Matrix4::Translation(Vector3(3500, 85.0f, 5000.0f))*Matrix4::Rotation(-10,Vector3(0,1,0))*Matrix4::Scale(Vector3(1.0f, 0.6f, 0.6f)));
 	planet1Scene->getWallMesh()->SetTexture(SOIL_load_OGL_texture("../../Textures/wall.PNG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
@@ -135,6 +136,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	SetTextureRepeating(planet1Scene->getWallMesh()->GetBumpMap(0), true);
 	scene1->AddChild(planet1Scene);
 
+	//rain particles emitter
 	emitter = new ParticleEmitter();
 	SceneNode * rain = new SceneNode();
 	rain->SetTransform(Matrix4::Translation(Vector3(0, 500, 0)));
@@ -142,7 +144,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	rain->SetBoundingRadius(500.0f);
 	scene1->AddChild(rain);
 	
-
+	//red planet
 	SceneNode* scene2 = new SceneNode();
 	scene2->SetColour(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 	scene2->SetTransform(Matrix4::Translation(Vector3(0.0f, 0.0f, 0.0f)));
@@ -174,6 +176,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	}
 	SetTextureRepeating(sphere->GetBumpMap(0),true); SetTextureRepeating(sphere->GetBumpMap(1), true); SetTextureRepeating(sphere->GetBumpMap(2), true);
 	root3->AddChild(planetSystem);
+	
 	//shadow
 	for (int i = 0; i < 2; i++) {
 		glGenTextures(1, &shadowTex[i]);
@@ -222,7 +225,6 @@ Renderer ::~Renderer(void) {
 }
 
 void Renderer::UpdateScene(float msec) {
-	
 	emitter->Update(msec);
 	camera -> UpdateCamera(msec);
 	viewMatrix = camera -> BuildViewMatrix();
@@ -256,9 +258,7 @@ void Renderer::DrawShadowScene() {
 		if (root == root1) {
 			target = Vector3(3500, 400, 5000);
 		}
-		/*if (scene == 4) {
-			projMatrix = Matrix4::Perspective(1.0f, 17000.0f, (float)width  / (float)height, 45.0f);
-		}*/
+	
 		viewMatrix = Matrix4::BuildViewMatrix(lights[i]->GetPosition(), target);
 		shadowMatrix[i] = biasMatrix *(projMatrix * viewMatrix);
 
@@ -275,18 +275,8 @@ void Renderer::DrawShadowScene() {
 
 }
 
-//void Renderer::DrawSun() {
-//	modelMatrix = Matrix4::Translation(Vector3(lights[0]->GetPosition().x, lights[0]->GetPosition().y, lights[0]->GetPosition().z))*
-//	Matrix4::Scale(Vector3(200, 200, 200));
-//	Matrix4 tempMatrix = shadowMatrix[0] * modelMatrix;
-//
-//	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "shadowMatrix"), 1, false, *& tempMatrix.values);
-//	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "modelMatrix"), 1, false, *& modelMatrix.values);
-//
-//	earth_sun->Draw();
-//
-//}
-
+/* Draw scenes
+   param sc: scene to draw*/
 void Renderer::drawScene(int sc) {
 	
 	glDisable(GL_CULL_FACE);
@@ -416,6 +406,7 @@ void Renderer::drawScene(int sc) {
 
 	SetCurrentShader(particleShader);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
+	//rain and thunder only in planet earth
 	if (root == root1 && rain) {
 		emitter->SetParticleSize(8.0f);
 		emitter->SetParticleVariance(0.10f);
@@ -455,7 +446,6 @@ void Renderer::thunder() {
 }
 
 void Renderer::RenderScene() {
-
 
 	if (goToSpace) {
 		if (!transition) {
@@ -512,6 +502,7 @@ void	Renderer::SetShaderParticleSize(float f) {
 	glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "particleSize"), f);
 }
 
+//Fade out / In
 void Renderer::teleport() {
 	if (transition) {
 		if (fadeOut) {

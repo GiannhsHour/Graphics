@@ -103,7 +103,7 @@ if(type == 1){
 	  fogFactor = 1.0 /exp(cameraDist * FogDensity);
 	  fogFactor = clamp( fogFactor, 0.0, 1.0 );
 	  //interpolate based on fogFactor ( which is based on distance )
-	  FragColor.rgb = fogColor*(1-fogFactor)*total_ambient*55 + FragColor.rgb * fogFactor;
+	  FragColor.rgb = fogColor*(1-fogFactor)*min(total_ambient,0.1)*50 + FragColor.rgb * fogFactor;
   }
  
   

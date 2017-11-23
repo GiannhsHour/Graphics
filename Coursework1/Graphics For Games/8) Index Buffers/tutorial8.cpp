@@ -35,10 +35,12 @@ int main() {
 			renderer.setRoot(4);
 		}
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_P)) {
-			light->SetAmbient(light->GetAmbient() + 0.002f);
+			light->SetAmbient(light->GetAmbient() + 0.001f);
 		}
-		if (Window::GetKeyboard()->KeyDown(KEYBOARD_O))
-			light->SetAmbient(light->GetAmbient() - 0.002f);
+		if (Window::GetKeyboard()->KeyDown(KEYBOARD_O)) {
+			light->SetAmbient(light->GetAmbient() - 0.001f);
+		}
+	
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_L)) {
 			light->SetRadius(light->GetRadius() + 30.0f);
 		}
