@@ -146,6 +146,8 @@ protected:
 	bool rain;
 	int fog;
 
+	bool leftScreen;
+	bool rightScreen;
 
 	int numberOfStrikes;
 	Light * thunderLight;

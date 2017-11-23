@@ -5,6 +5,7 @@
 
 Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	t = clock();
+	total_scene_time = 0;
 	changeScene = true;
 	rain = true;
 	fog = 1;
@@ -56,7 +57,7 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	planet1Lights.push_back(earthlight);
 	planet1Lights.push_back(thunderLight);
 
-	Light *redPlanetLight = new Light(Vector3(15000, 7000, 15000), Vector4(1, 1, 1, 1), 35000);
+	Light *redPlanetLight = new Light(Vector3(7000, 5000, 7000), Vector4(1, 1, 1, 1), 35000);
 	redPlanetLight->SetAmbient(0.02f);
 	planet2Lights.push_back(redPlanetLight);
 	
@@ -247,7 +248,8 @@ void Renderer::DrawSkybox() {
 void Renderer::DrawShadowScene() {
 	for (int i = 0; i < lights.size(); i++) {
 		glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO[i]);
-
+		glDisable(GL_SCISSOR_TEST);
+		glScissor(0, 0, width, height);
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 		glViewport(1, 1, SHADOWSIZE - 2, SHADOWSIZE - 2);
@@ -269,9 +271,15 @@ void Renderer::DrawShadowScene() {
 
 		glUseProgram(0);
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		glViewport(0, 0, width, height);
+
+		if (leftScreen) glViewport(0, 0, width / 2, height);
+		else if (rightScreen) glViewport(width / 2, 0, width / 2, height);
+		else glViewport(0, 0, width, height);
+		
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glEnable(GL_SCISSOR_TEST);
+		glScissor(0, 0, width, height);
 	}
 
 }
@@ -385,8 +393,11 @@ void Renderer::drawScene(int sc) {
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex2"), 7);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex3"), 8);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex4"), 9);
+	if (lights.size() > 1) {
+		glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "shadowTex2"), 11);
+	}
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "shadowTex1"), 10);
-	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "shadowTex2"), 11);
+	
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "fog"), fog);
 
 	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float *)& camera->GetPosition());
@@ -402,8 +413,8 @@ void Renderer::drawScene(int sc) {
 
 	viewMatrix = camera->BuildViewMatrix();
 
-	UpdateShaderMatrices();
 	SetShaderLight(lights);
+	UpdateShaderMatrices();
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_CULL_FACE);
@@ -467,6 +478,8 @@ void Renderer::RenderScene() {
 		glDisable(GL_SCISSOR_TEST);
 		glViewport(0, 0, width, height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		leftScreen = false;
+		rightScreen = false;
 		drawScene(1);
 		teleport();
 	}
@@ -474,6 +487,8 @@ void Renderer::RenderScene() {
 		glDisable(GL_SCISSOR_TEST);
 		glViewport(0, 0, width, height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		leftScreen = false;
+		rightScreen = false;
 		drawScene(2);
 		teleport();
 	}
@@ -481,6 +496,8 @@ void Renderer::RenderScene() {
 		glDisable(GL_SCISSOR_TEST);
 		glViewport(0, 0, width, height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		leftScreen = false;
+		rightScreen = false;
 		drawScene(3);
 		teleport();
 	}
@@ -489,14 +506,20 @@ void Renderer::RenderScene() {
 		glViewport(0, 0, width/2, height);
 		glScissor(0, 0, width / 2, height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		leftScreen = true;
+		rightScreen = false;
 		drawScene(1);
 		teleport();
 		glViewport(width / 2, 0, width / 2, height);
 		glScissor(width / 2, 0, width / 2, height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		leftScreen = false;
+		rightScreen = true;
 		drawScene(2);
 		teleport();
 	}
+	glDisable(GL_SCISSOR_TEST);
+	glScissor(0, 0, width, height);
 
 	sceneChange();
 
