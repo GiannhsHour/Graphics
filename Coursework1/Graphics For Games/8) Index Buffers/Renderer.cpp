@@ -131,10 +131,8 @@ Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	planet1Scene->SetTransform(Matrix4::Translation(Vector3(3500, 85.0f, 5000.0f))*Matrix4::Rotation(-10,Vector3(0,1,0))*Matrix4::Scale(Vector3(1.0f, 0.6f, 0.6f)));
 	planet1Scene->getWallMesh()->SetTexture(SOIL_load_OGL_texture("../../Textures/wall.PNG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
 	planet1Scene->getWallMesh()->SetBumpMap(SOIL_load_OGL_texture("../../Textures/wall_normal.PNG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
-	planet1Scene->getPlantMesh()->SetTexture(SOIL_load_OGL_texture("../../Textures/grass.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS), 0);
 	SetTextureRepeating(planet1Scene->getWallMesh()->GetTexture(0), true);
 	SetTextureRepeating(planet1Scene->getWallMesh()->GetBumpMap(0), true);
-	SetTextureRepeating(planet1Scene->getPlantMesh()->GetTexture(0), true);
 	scene1->AddChild(planet1Scene);
 
 	emitter = new ParticleEmitter();

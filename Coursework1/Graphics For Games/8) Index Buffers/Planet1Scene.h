@@ -12,9 +12,6 @@ public:
 		OBJMesh * m = new OBJMesh();
 		m->LoadOBJMesh(MESHDIR"cube2.obj");
 		wall = m;
-		/*wall->GenerateNormals();
-		wall->GenerateTangents();
-		wall->BufferData();*/
 		OBJMesh * p = new OBJMesh();
 		p->LoadOBJMesh(MESHDIR"cube2.obj");
 		plant = p;

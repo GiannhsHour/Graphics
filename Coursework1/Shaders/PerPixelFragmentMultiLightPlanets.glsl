@@ -32,6 +32,8 @@ uniform int type;
  vec3 tangent ; 
  vec3 binormal ; 
  vec3 worldPos ;
+ vec4 shadowProj1;
+ vec4 shadowProj2;
  } IN ;
 
  out vec4 FragColor ;
