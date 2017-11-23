@@ -66,8 +66,11 @@ int main() {
 		}
 
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_R)) {
-			
 			renderer.rotateSun();
+		}
+
+		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_PAUSE)) {
+			renderer.toggleSceneChange();
 		}
 
 		float sinceLastTime = w.GetTimer()->GetTimedMS();

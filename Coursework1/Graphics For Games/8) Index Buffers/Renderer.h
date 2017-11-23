@@ -61,6 +61,8 @@ public:
 	}
 	void teleport();
 
+	void toggleSceneChange() { changeScene = !changeScene; }
+
 	void	DrawText(const std::string &text, const Vector3 &position, const float size = 10.0f, const bool perspective = false);
 
 protected:
@@ -75,6 +77,7 @@ protected:
 	void SetShaderParticleSize(float f);	
 	void drawScene(int scene);
 	void thunder();
+	void sceneChange();
 
 	ParticleEmitter*	emitter;	
 
@@ -148,5 +151,8 @@ protected:
 	Light * thunderLight;
 	bool thunderStart;
 	int thunderTime;
+
+	bool changeScene;
+	float total_scene_time;
 
 };

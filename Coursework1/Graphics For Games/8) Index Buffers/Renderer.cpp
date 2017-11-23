@@ -5,6 +5,7 @@
 
 Renderer::Renderer(Window & parent) : OGLRenderer(parent) {
 	t = clock();
+	changeScene = true;
 	rain = true;
 	fog = 1;
 	planetEnter = false;
@@ -497,7 +498,7 @@ void Renderer::RenderScene() {
 		teleport();
 	}
 
-
+	sceneChange();
 
 	glUseProgram(0);
 	SwapBuffers();
@@ -617,4 +618,14 @@ void Renderer::DrawText(const std::string &text, const Vector3 &position, const 
 	mesh->Draw();
 
 	delete mesh; //Once it's drawn, we don't need it anymore!
+}
+
+void Renderer::sceneChange() {
+	if (changeScene) {
+		total_scene_time += sinceLastTime;
+		if (total_scene_time > 3000) {
+			scene = scene % 4 + 1;
+			total_scene_time = 0;
+		}
+	}
 }
